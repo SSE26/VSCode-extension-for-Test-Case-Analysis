@@ -1,0 +1,71 @@
+{
+  "name": "test-case-analysis",
+  "displayName": "Test Case Analysis",
+  "description": "A simple TypeScript VS Code extension with a custom sidebar view.",
+  "version": "0.0.1",
+  "publisher": "local",
+  "icon": "images/icon.svg",
+  "engines": {
+    "vscode": "^1.97.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:testCaseAnalysis.helloWorld",
+    "onView:testCaseAnalysis.sidebarView"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "testCaseAnalysis.helloWorld",
+        "title": "Test Case Analysis: Run Hello World"
+      },
+      {
+        "command": "testCaseAnalysis.refreshSidebar",
+        "title": "Test Case Analysis: Refresh Sidebar",
+        "icon": "$(refresh)"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "testCaseAnalysis",
+          "title": "Test Case Analysis",
+          "icon": "images/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "testCaseAnalysis": [
+        {
+          "id": "testCaseAnalysis.sidebarView",
+          "name": "Test Case Analysis"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "testCaseAnalysis.refreshSidebar",
+          "when": "view == testCaseAnalysis.sidebarView",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "@types/vscode": "^1.97.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.5.2",
+    "typescript": "^5.8.2"
+  }
+}
