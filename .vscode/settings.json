@@ -1,4 +1,3 @@
 {
-  "testCaseAnalysis.testCommandTemplate": "node --test --test-name-pattern ${testNamePattern} ${relativeFile}",
-  "testCaseAnalysis.efficientRunCommandTemplate": "node --test --test-name-pattern ${testNamePattern} ${relativeFile}"
+  "testCaseAnalysis.testCommandTemplate": "node --test --test-name-pattern ${testNamePattern} ${relativeFile}"
 }

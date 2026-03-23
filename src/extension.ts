@@ -2,10 +2,12 @@ import * as vscode from "vscode";
 import { readFile } from "fs/promises";
 import { exec } from "child_process";
 import { promisify } from "util";
+import { getWebviewHtml } from "./webviewHtml";
 
 const execAsync = promisify(exec);
 const DEFAULT_VIEW_ID = "testCaseAnalysis.sidebarView";
 
+// Store test info
 type TestRuntime = {
   uri: vscode.Uri;
   testName: string;
@@ -15,6 +17,7 @@ type TestRuntime = {
   errorMessage?: string;
 };
 
+// Store test info
 type ViewState = {
   selectedFiles: vscode.Uri[];
   profiledTests: TestRuntime[];
@@ -34,12 +37,13 @@ class TestCaseAnalysisController {
 
   private view?: vscode.WebviewView;
 
+  // Custom sidebar screen that allows users to select test files, profile tests, and run them efficiently
   resolveWebviewView(view: vscode.WebviewView): void {
     this.view = view;
     view.webview.options = {
       enableScripts: true
     };
-    view.webview.html = this.getWebviewHtml();
+    view.webview.html = getWebviewHtml();
     view.webview.onDidReceiveMessage((message) => {
       switch (message.command) {
         case "selectFiles":
@@ -59,10 +63,7 @@ class TestCaseAnalysisController {
     this.postState();
   }
 
-  dispose(): void {
-    return;
-  }
-
+  // Let the user select which files they want to analyze
   async selectFiles(): Promise<void> {
     const workspaceFolder = this.getPrimaryWorkspaceFolder();
     const uris = await vscode.window.showOpenDialog({
@@ -87,15 +88,13 @@ class TestCaseAnalysisController {
     this.postState();
   }
 
+  // Run each test by itself and save how long it takes
   async profileSelectedTests(): Promise<void> {
     if (!(await this.ensureSelectedFiles())) {
       return;
     }
 
-    const profileCommandTemplate = this.getConfiguredCommand("testCommandTemplate");
-    if (!profileCommandTemplate) {
-      return;
-    }
+    const profileCommandTemplate = this.getConfiguredCommand();
 
     await this.runBusyTask("Profiling individual tests...", async () => {
       const discoveredTests = await this.discoverSelectedTests();
@@ -114,8 +113,7 @@ class TestCaseAnalysisController {
         const result = await this.executeSingleTestCase(
           discoveredTest.uri,
           discoveredTest.testName,
-          profileCommandTemplate,
-          "profile"
+          profileCommandTemplate
         );
         profiledTests.push(result);
       }
@@ -127,6 +125,7 @@ class TestCaseAnalysisController {
     });
   }
 
+  // Run the saved tests from fastest to slowest
   async runTestsEfficiently(): Promise<void> {
     if (this.state.profiledTests.length === 0) {
       void vscode.window.showWarningMessage("Profile the selected test cases before running them efficiently.");
@@ -137,14 +136,7 @@ class TestCaseAnalysisController {
       return;
     }
 
-    const efficientCommandTemplate = this.getConfiguredCommand(
-      "efficientRunCommandTemplate",
-      "testCommandTemplate"
-    );
-
-    if (!efficientCommandTemplate) {
-      return;
-    }
+    const efficientCommandTemplate = this.getConfiguredCommand();
 
     await this.runBusyTask("Running profiled tests from shortest to longest...", async () => {
       const executedTests: TestRuntime[] = [];
@@ -154,8 +146,7 @@ class TestCaseAnalysisController {
         const result = await this.executeSingleTestCase(
           test.uri,
           test.testName,
-          efficientCommandTemplate,
-          "efficient"
+          efficientCommandTemplate
         );
         const executedTest: TestRuntime = {
           uri: test.uri,
@@ -182,6 +173,7 @@ class TestCaseAnalysisController {
     });
   }
 
+  // Discover test cases in the selected files
   private async discoverSelectedTests(): Promise<Array<{ uri: vscode.Uri; testName: string }>> {
     const discoveredTests: Array<{ uri: vscode.Uri; testName: string }> = [];
 
@@ -196,6 +188,7 @@ class TestCaseAnalysisController {
     return discoveredTests;
   }
 
+  // Extract test names using regex
   private extractTestNames(source: string): string[] {
     const names: string[] = [];
     const testPattern = /\b(?:test|it)\s*\(\s*(["'`])((?:\\.|(?!\1)[\s\S])*)\1/g;
@@ -211,6 +204,7 @@ class TestCaseAnalysisController {
     return [...new Set(names)];
   }
 
+  // Make sure that the user has selected files
   private async ensureSelectedFiles(): Promise<boolean> {
     if (this.state.selectedFiles.length > 0) {
       return true;
@@ -220,6 +214,7 @@ class TestCaseAnalysisController {
     return false;
   }
 
+  // Mark the extension as busy while a task is running
   private async runBusyTask(status: string, task: () => Promise<void>): Promise<void> {
     if (this.state.isBusy) {
       void vscode.window.showWarningMessage("Test Case Analysis is already running a task.");
@@ -242,15 +237,14 @@ class TestCaseAnalysisController {
     }
   }
 
+  // Run one test case and measure how long it takes
   private async executeSingleTestCase(
     uri: vscode.Uri,
     testName: string,
-    commandTemplate: string,
-    _mode: "profile" | "efficient"
+    commandTemplate: string
   ): Promise<TestRuntime> {
     const workspaceFolder = this.getWorkspaceFolderForUri(uri);
     const command = this.buildCommand(uri, testName, commandTemplate, workspaceFolder);
-    const testLabel = this.formatTestLabel(uri, testName);
 
     const startedAt = process.hrtime.bigint();
     try {
@@ -294,6 +288,7 @@ class TestCaseAnalysisController {
     }
   }
 
+  // Fill the command template with the file and test values
   private buildCommand(
     uri: vscode.Uri,
     testName: string,
@@ -315,50 +310,45 @@ class TestCaseAnalysisController {
       );
   }
 
-  private getConfiguredCommand(
-    preferredKey: "testCommandTemplate" | "efficientRunCommandTemplate",
-    fallbackKey?: "testCommandTemplate"
-  ): string | undefined {
+  // Read the test command from the extension settings
+  private getConfiguredCommand(): string {
     const configuration = vscode.workspace.getConfiguration("testCaseAnalysis");
-    const preferred = configuration.get<string>(preferredKey)?.trim();
-    if (preferred) {
-      return preferred;
-    }
+    const command = configuration.get<string>("testCommandTemplate")?.trim();
 
-    if (fallbackKey) {
-      const fallback = configuration.get<string>(fallbackKey)?.trim();
-      if (fallback) {
-        return fallback;
-      }
-    }
-
-    return "node --test --test-name-pattern ${testNamePattern} ${relativeFile}";
+    return command || "node --test --test-name-pattern ${testNamePattern} ${relativeFile}";
   }
 
+  // Get main project folder
   private getPrimaryWorkspaceFolder(): vscode.WorkspaceFolder | undefined {
     return vscode.workspace.workspaceFolders?.[0];
   }
 
+  // Find which folder a file belongs to
   private getWorkspaceFolderForUri(uri: vscode.Uri): vscode.WorkspaceFolder | undefined {
     return vscode.workspace.getWorkspaceFolder(uri) ?? this.getPrimaryWorkspaceFolder();
   }
 
+  // Put strings in quotes, to make sure terminal understands
   private quoteShellArgument(value: string): string {
     return `"${value.replace(/"/g, '\\"')}"`;
   }
 
+  // Make path readable
   private formatPath(uri: vscode.Uri): string {
     return vscode.workspace.asRelativePath(uri, false);
   }
 
+  // Get file name
   private formatFileName(uri: vscode.Uri): string {
     return uri.path.split("/").pop() ?? uri.fsPath.split("\\").pop() ?? uri.fsPath;
   }
 
+  // Format the test label for display
   private formatTestLabel(uri: vscode.Uri, testName: string): string {
     return `${this.formatPath(uri)} :: ${testName}`;
   }
 
+  // Send the latest data to the UI
   private postState(): void {
     this.view?.webview.postMessage({
       type: "state",
@@ -383,182 +373,9 @@ class TestCaseAnalysisController {
       }
     });
   }
-
-  private getWebviewHtml(): string {
-    const nonce = getNonce();
-
-    return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'nonce-${nonce}';" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Test Case Analysis</title>
-  <style>
-    :root {
-      color-scheme: light dark;
-      font-family: var(--vscode-font-family);
-    }
-
-    body {
-      padding: 16px;
-      color: var(--vscode-foreground);
-      background: var(--vscode-sideBar-background);
-    }
-
-    .stack {
-      display: grid;
-      gap: 12px;
-    }
-
-    button {
-      width: 100%;
-      border: 0;
-      padding: 10px 12px;
-      cursor: pointer;
-      color: var(--vscode-button-foreground);
-      background: var(--vscode-button-background);
-    }
-
-    button:disabled {
-      cursor: default;
-      opacity: 0.6;
-    }
-
-    .panel {
-      border: 1px solid var(--vscode-panel-border);
-      padding: 12px;
-      background: var(--vscode-editor-background);
-    }
-
-    .title {
-      margin: 0 0 8px;
-      font-size: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
-
-    .status {
-      font-size: 12px;
-      color: var(--vscode-descriptionForeground);
-    }
-
-    ul {
-      margin: 0;
-      padding-left: 18px;
-    }
-
-    li {
-      margin: 4px 0;
-      word-break: break-word;
-    }
-  </style>
-</head>
-<body>
-  <div class="stack">
-    <button id="selectFiles">Select Test Files</button>
-    <button id="profileTests">Profile Tests</button>
-    <button id="runEfficiently">Run Tests Efficiently</button>
-
-    <div class="panel">
-      <p class="title">Status</p>
-      <div id="status" class="status">Select test files to begin.</div>
-    </div>
-
-    <div class="panel">
-      <p class="title">Selected Files</p>
-      <ul id="selectedFiles"></ul>
-    </div>
-
-    <div class="panel">
-      <p class="title">Measured Test Runtimes</p>
-      <ul id="profiledTests"></ul>
-    </div>
-
-    <div class="panel">
-      <p class="title">Efficient Run Results</p>
-      <ul id="efficientRunTests"></ul>
-    </div>
-  </div>
-
-  <script nonce="${nonce}">
-    const vscode = acquireVsCodeApi();
-    const selectedFilesElement = document.getElementById("selectedFiles");
-    const profiledTestsElement = document.getElementById("profiledTests");
-    const efficientRunTestsElement = document.getElementById("efficientRunTests");
-    const statusElement = document.getElementById("status");
-    const buttons = {
-      selectFiles: document.getElementById("selectFiles"),
-      profileTests: document.getElementById("profileTests"),
-      runEfficiently: document.getElementById("runEfficiently")
-    };
-
-    buttons.selectFiles.addEventListener("click", () => {
-      vscode.postMessage({ command: "selectFiles" });
-    });
-
-    buttons.profileTests.addEventListener("click", () => {
-      vscode.postMessage({ command: "profileTests" });
-    });
-
-    buttons.runEfficiently.addEventListener("click", () => {
-      vscode.postMessage({ command: "runEfficiently" });
-    });
-
-    window.addEventListener("message", (event) => {
-      const message = event.data;
-      if (message.type !== "state") {
-        return;
-      }
-
-      const state = message.value;
-      statusElement.textContent = state.status;
-
-      for (const button of Object.values(buttons)) {
-        button.disabled = state.isBusy;
-      }
-
-      selectedFilesElement.replaceChildren(...toItems(state.selectedFiles, (path) => path));
-      profiledTestsElement.replaceChildren(...toItems(
-        state.profiledTests,
-        (test) => {
-          const status = test.lastRunPassed ? "PASS" : "FAIL";
-          return test.fileName + " :: " + test.testName + " - " + test.runtimeMs.toFixed(2) + " ms - " + status;
-        }
-      ));
-
-      efficientRunTestsElement.replaceChildren(...toItems(
-        state.efficientRunTests,
-        (test) => {
-          const status = test.lastRunPassed ? "PASS" : "FAIL";
-          return test.fileName
-            + " :: " + test.testName
-            + " - " + test.profiledRuntimeMs.toFixed(2) + " ms"
-            + " - " + status;
-        }
-      ));
-    });
-
-    function toItems(values, formatter) {
-      if (!values || values.length === 0) {
-        const item = document.createElement("li");
-        item.textContent = "None";
-        return [item];
-      }
-
-      return values.map((value) => {
-        const item = document.createElement("li");
-        item.textContent = formatter(value);
-        return item;
-      });
-    }
-  </script>
-</body>
-</html>`;
-  }
 }
 
+// Connect controller to VS Code UI
 class TestCaseAnalysisWebviewProvider implements vscode.WebviewViewProvider {
   constructor(private readonly controller: TestCaseAnalysisController) {}
 
@@ -571,6 +388,7 @@ class TestCaseAnalysisWebviewProvider implements vscode.WebviewViewProvider {
   }
 }
 
+// Start the sidebar and register the extension commands
 export function activate(context: vscode.ExtensionContext): void {
   const controller = new TestCaseAnalysisController();
   const provider = new TestCaseAnalysisWebviewProvider(controller);
@@ -579,25 +397,11 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.window.registerWebviewViewProvider(DEFAULT_VIEW_ID, provider),
     vscode.commands.registerCommand("testCaseAnalysis.selectFiles", () => controller.selectFiles()),
     vscode.commands.registerCommand("testCaseAnalysis.profileTests", () => controller.profileSelectedTests()),
-    vscode.commands.registerCommand("testCaseAnalysis.runTestsEfficiently", () => controller.runTestsEfficiently()),
-    {
-      dispose: () => controller.dispose()
-    }
+    vscode.commands.registerCommand("testCaseAnalysis.runTestsEfficiently", () => controller.runTestsEfficiently())
   );
 }
 
-export function deactivate(): void {}
-
+// Make test name safe for regex
 function escapeRegex(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-function getNonce(): string {
-  const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  let value = "";
-  for (let index = 0; index < 32; index += 1) {
-    value += possible.charAt(Math.floor(Math.random() * possible.length));
-  }
-
-  return value;
 }

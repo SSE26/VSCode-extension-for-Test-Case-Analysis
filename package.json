@@ -58,11 +58,6 @@
           "type": "string",
           "default": "node --test --test-name-pattern ${testNamePattern} ${relativeFile}",
           "description": "Command used to run one discovered test case. Use ${file}, ${relativeFile}, ${testName}, or ${testNamePattern} in the command."
-        },
-        "testCaseAnalysis.efficientRunCommandTemplate": {
-          "type": "string",
-          "default": "node --test --test-name-pattern ${testNamePattern} ${relativeFile}",
-          "description": "Optional command used when running discovered test cases in shortest-first order. If empty, the test command template is reused."
         }
       }
     }
