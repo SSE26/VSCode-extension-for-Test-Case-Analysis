@@ -3,6 +3,7 @@ import { readFile } from "fs/promises";
 import { exec } from "child_process";
 import { promisify } from "util";
 import { getWebviewHtml } from "./webviewHtml";
+import { stderr } from "process";
 
 const execAsync = promisify(exec);
 const DEFAULT_VIEW_ID = "testCaseAnalysis.sidebarView";
@@ -15,6 +16,8 @@ type TestRuntime = {
   profiledRuntimeMs: number;
   lastRunPassed: boolean;
   errorMessage?: string;
+  actual?: String;
+  expected?: String;
 };
 
 // Store test info
@@ -251,7 +254,7 @@ class TestCaseAnalysisController {
       await execAsync(command, {
         cwd: workspaceFolder?.uri.fsPath ?? vscode.workspace.rootPath,
         windowsHide: true,
-        maxBuffer: 10 * 1024 * 1024
+        maxBuffer: 50 * 1024 * 1024
       });
       const runtimeMs = Number(process.hrtime.bigint() - startedAt) / 1_000_000;
       return {
@@ -277,13 +280,31 @@ class TestCaseAnalysisController {
         .filter((value) => Boolean(value))
         .join("\n")
         .trim();
+
+      const regexFilter = /\{[^{}]*\}/s;
+      var actual: String | undefined = undefined;
+      var expected: String | undefined = undefined;
+      if (errorMessage[1] != null) {
+        const jsonMatch = errorMessage[1].match(regexFilter);
+        if (jsonMatch != null) {
+          const jsonString = jsonMatch[0]
+            .replace(/(\w+):/g, '"$1":')
+            .replace(/'/g, '"');
+          const parsed = JSON.parse(jsonString);
+          actual = parsed.actual;
+          expected = parsed.expected;
+        }
+      }
+      
       return {
         uri,
         testName,
         runtimeMs,
         profiledRuntimeMs: runtimeMs,
         lastRunPassed: false,
-        errorMessage
+        errorMessage,
+        actual,
+        expected
       };
     }
   }
