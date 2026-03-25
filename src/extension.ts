@@ -6,6 +6,7 @@ import { getWebviewHtml } from "./webviewHtml";
 
 const execAsync = promisify(exec);
 const DEFAULT_VIEW_ID = "testCaseAnalysis.sidebarView";
+const SUPPORTED_TEST_FILE_EXTENSIONS = new Set([".js", ".ts"]);
 
 // Store test info
 type TestRuntime = {
@@ -73,7 +74,7 @@ class TestCaseAnalysisController {
       defaultUri: workspaceFolder?.uri,
       openLabel: "Select Test Files",
       filters: {
-        "Test files": ["js", "cjs", "mjs", "ts", "cts", "mts", "jsx", "tsx"]
+        "JavaScript and TypeScript test files": ["js", "ts"]
       }
     });
 
@@ -81,11 +82,25 @@ class TestCaseAnalysisController {
       return;
     }
 
-    this.state.selectedFiles = uris;
+    const supportedUris = this.filterSupportedTestFiles(uris);
+    if (supportedUris.length === 0) {
+      this.state.selectedFiles = [];
+      this.state.profiledTests = [];
+      this.state.efficientRunTests = [];
+      this.state.status = "No JavaScript or TypeScript test files are selected.";
+      this.postState();
+      void vscode.window.showWarningMessage("Select JavaScript or TypeScript test files only.");
+      return;
+    }
+
+    this.state.selectedFiles = supportedUris;
     this.state.profiledTests = [];
     this.state.efficientRunTests = [];
-    this.state.status = `Selected ${uris.length} test file${uris.length === 1 ? "" : "s"}.`;
+    this.state.status = `Selected ${supportedUris.length} JavaScript/TypeScript test file${supportedUris.length === 1 ? "" : "s"}.`;
     this.postState();
+    if (supportedUris.length !== uris.length) {
+      void vscode.window.showWarningMessage("Unsupported files were ignored. Only JavaScript and TypeScript test files can be run.");
+    }
   }
 
   // Run each test by itself and save how long it takes
@@ -206,11 +221,24 @@ class TestCaseAnalysisController {
 
   // Make sure that the user has selected files
   private async ensureSelectedFiles(): Promise<boolean> {
+    const supportedFiles = this.filterSupportedTestFiles(this.state.selectedFiles);
+    if (supportedFiles.length !== this.state.selectedFiles.length) {
+      this.state.selectedFiles = supportedFiles;
+      this.state.profiledTests = this.state.profiledTests.filter((test) =>
+        this.isSupportedTestFile(test.uri)
+      );
+      this.state.efficientRunTests = this.state.efficientRunTests.filter((test) =>
+        this.isSupportedTestFile(test.uri)
+      );
+      this.postState();
+      void vscode.window.showWarningMessage("Unsupported files were removed. Only JavaScript and TypeScript test files can be run.");
+    }
+
     if (this.state.selectedFiles.length > 0) {
       return true;
     }
 
-    void vscode.window.showWarningMessage("Select at least one test file first.");
+    void vscode.window.showWarningMessage("Select at least one JavaScript or TypeScript test file first.");
     return false;
   }
 
@@ -346,6 +374,27 @@ class TestCaseAnalysisController {
   // Format the test label for display
   private formatTestLabel(uri: vscode.Uri, testName: string): string {
     return `${this.formatPath(uri)} :: ${testName}`;
+  }
+
+  private filterSupportedTestFiles(uris: vscode.Uri[]): vscode.Uri[] {
+    return uris.filter((uri) => this.isSupportedTestFile(uri));
+  }
+
+  private isSupportedTestFile(uri: vscode.Uri): boolean {
+    const fileName = uri.path.split("/").pop() ?? uri.fsPath.split("\\").pop() ?? "";
+    const extensionIndex = fileName.indexOf(".");
+    if (extensionIndex === -1) {
+      return false;
+    }
+
+    const normalizedFileName = fileName.toLowerCase();
+    for (const extension of SUPPORTED_TEST_FILE_EXTENSIONS) {
+      if (normalizedFileName.endsWith(extension)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   // Send the latest data to the UI
