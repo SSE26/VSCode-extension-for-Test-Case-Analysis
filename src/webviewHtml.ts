@@ -109,25 +109,11 @@ export function getWebviewHtml(): string {
       runEfficiently: document.getElementById("runEfficiently")
     };
 
-    buttons.selectFiles.addEventListener("click", () => {
-      vscode.postMessage({ command: "selectFiles" });
-    });
-
-    buttons.profileTests.addEventListener("click", () => {
-      vscode.postMessage({ command: "profileTests" });
-    });
-
-    buttons.runEfficiently.addEventListener("click", () => {
-      vscode.postMessage({ command: "runEfficiently" });
-    });
-
-    window.addEventListener("message", (event) => {
-      const message = event.data;
-      if (message.type !== "state") {
+    function renderState(state) {
+      if (!state) {
         return;
       }
 
-      const state = message.value;
       statusElement.textContent = state.status;
 
       for (const button of Object.values(buttons)) {
@@ -153,6 +139,32 @@ export function getWebviewHtml(): string {
             + " - " + status;
         }
       ));
+    }
+
+    const savedState = vscode.getState();
+    renderState(savedState);
+
+    buttons.selectFiles.addEventListener("click", () => {
+      vscode.postMessage({ command: "selectFiles" });
+    });
+
+    buttons.profileTests.addEventListener("click", () => {
+      vscode.postMessage({ command: "profileTests" });
+    });
+
+    buttons.runEfficiently.addEventListener("click", () => {
+      vscode.postMessage({ command: "runEfficiently" });
+    });
+
+    window.addEventListener("message", (event) => {
+      const message = event.data;
+      if (message.type !== "state") {
+        return;
+      }
+
+      const state = message.value;
+      renderState(state);
+      vscode.setState(state);
     });
 
     function toItems(values, formatter) {
