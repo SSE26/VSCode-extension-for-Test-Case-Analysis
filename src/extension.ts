@@ -3,7 +3,6 @@ import { readFile } from "fs/promises";
 import { exec } from "child_process";
 import { promisify } from "util";
 import { getWebviewHtml } from "./webviewHtml";
-import { stderr } from "process";
 
 const execAsync = promisify(exec);
 const DEFAULT_VIEW_ID = "testCaseAnalysis.sidebarView";
@@ -16,8 +15,8 @@ type TestRuntime = {
   profiledRuntimeMs: number;
   lastRunPassed: boolean;
   errorMessage?: string;
-  actual?: String;
-  expected?: String;
+  actual?: string;
+  expected?: string;
 };
 
 // Store test info
@@ -157,7 +156,9 @@ class TestCaseAnalysisController {
           runtimeMs: result.runtimeMs,
           profiledRuntimeMs: test.profiledRuntimeMs,
           lastRunPassed: result.lastRunPassed,
-          errorMessage: result.errorMessage
+          errorMessage: result.errorMessage,
+          actual: result.actual,
+          expected: result.expected
         };
         executedTests.push(executedTest);
         this.state.efficientRunTests = [...executedTests];
@@ -282,10 +283,10 @@ class TestCaseAnalysisController {
         .trim();
 
       const regexFilter = /\{[^{}]*\}/s;
-      var actual: String | undefined = undefined;
-      var expected: String | undefined = undefined;
-      if (errorMessage[1] != null) {
-        const jsonMatch = errorMessage[1].match(regexFilter);
+      var actual: string | undefined = undefined;
+      var expected: string | undefined = undefined;
+      if (errorMessage != null) {
+        const jsonMatch = errorMessage.match(regexFilter);
         if (jsonMatch != null) {
           const jsonString = jsonMatch[0]
             .replace(/(\w+):/g, '"$1":')
@@ -380,14 +381,18 @@ class TestCaseAnalysisController {
           testName: test.testName,
           runtimeMs: test.runtimeMs,
           profiledRuntimeMs: test.profiledRuntimeMs,
-          lastRunPassed: test.lastRunPassed
+          lastRunPassed: test.lastRunPassed,
+          actual: test.actual,
+          expected: test.expected
         })),
         efficientRunTests: this.state.efficientRunTests.map((test) => ({
           fileName: this.formatFileName(test.uri),
           testName: test.testName,
           runtimeMs: test.runtimeMs,
           profiledRuntimeMs: test.profiledRuntimeMs,
-          lastRunPassed: test.lastRunPassed
+          lastRunPassed: test.lastRunPassed,
+          actual: test.actual,
+          expected: test.expected
         })),
         isBusy: this.state.isBusy,
         status: this.state.status

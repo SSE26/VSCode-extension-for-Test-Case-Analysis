@@ -139,7 +139,11 @@ export function getWebviewHtml(): string {
         state.profiledTests,
         (test) => {
           const status = test.lastRunPassed ? "PASS" : "FAIL";
-          return test.fileName + " :: " + test.testName + " - " + test.runtimeMs.toFixed(2) + " ms - " + status;
+          return test.fileName
+            + " :: " + test.testName
+            + " - " + test.runtimeMs.toFixed(2) + " ms"
+            + " - " + status
+            + formatFailureDetails(test);
         }
       ));
 
@@ -150,10 +154,21 @@ export function getWebviewHtml(): string {
           return test.fileName
             + " :: " + test.testName
             + " - " + test.profiledRuntimeMs.toFixed(2) + " ms"
-            + " - " + status;
+            + " - " + status
+            + formatFailureDetails(test);
         }
       ));
     });
+
+    function formatFailureDetails(test) {
+      if (test.lastRunPassed) {
+        return "";
+      }
+
+      const expected = test.expected ?? "(not captured)";
+      const actual = test.actual ?? "(not captured)";
+      return " | Expected: " + expected + " | Actual: " + actual;
+    }
 
     function toItems(values, formatter) {
       if (!values || values.length === 0) {
