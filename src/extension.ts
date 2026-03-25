@@ -274,14 +274,17 @@ class TestCaseAnalysisController {
     const workspaceFolder = this.getWorkspaceFolderForUri(uri);
     const command = this.buildCommand(uri, testName, commandTemplate, workspaceFolder);
 
-    const startedAt = process.hrtime.bigint();
     try {
-      await execAsync(command, {
+      const execution = await execAsync(command, {
         cwd: workspaceFolder?.uri.fsPath ?? vscode.workspace.rootPath,
         windowsHide: true,
         maxBuffer: 10 * 1024 * 1024
       });
-      const runtimeMs = Number(process.hrtime.bigint() - startedAt) / 1_000_000;
+      const runtimeMs = this.getReportedRuntimeMs(execution.stdout, execution.stderr);
+      if (runtimeMs === undefined) {
+        throw new Error("Could not read duration_ms from node --test output.");
+      }
+
       return {
         uri,
         testName,
@@ -291,12 +294,12 @@ class TestCaseAnalysisController {
         errorMessage: ""
       };
     } catch (error) {
-      const runtimeMs = Number(process.hrtime.bigint() - startedAt) / 1_000_000;
       const execError = error as {
         message?: string;
         stderr?: string;
         stdout?: string;
       };
+      const runtimeMs = this.getReportedRuntimeMs(execError.stdout, execError.stderr);
       const errorMessage = [
         execError.message,
         execError.stderr?.trim(),
@@ -308,8 +311,8 @@ class TestCaseAnalysisController {
       return {
         uri,
         testName,
-        runtimeMs,
-        profiledRuntimeMs: runtimeMs,
+        runtimeMs: runtimeMs ?? 0,
+        profiledRuntimeMs: runtimeMs ?? 0,
         lastRunPassed: false,
         errorMessage
       };
@@ -376,10 +379,12 @@ class TestCaseAnalysisController {
     return `${this.formatPath(uri)} :: ${testName}`;
   }
 
+  // Filter out unsupported files and warn the user if any were found
   private filterSupportedTestFiles(uris: vscode.Uri[]): vscode.Uri[] {
     return uris.filter((uri) => this.isSupportedTestFile(uri));
   }
 
+  // Check if the file has a supported extension
   private isSupportedTestFile(uri: vscode.Uri): boolean {
     const fileName = uri.path.split("/").pop() ?? uri.fsPath.split("\\").pop() ?? "";
     const extensionIndex = fileName.indexOf(".");
@@ -395,6 +400,29 @@ class TestCaseAnalysisController {
     }
 
     return false;
+  }
+
+  // Read the duration_ms value from the test output
+  private getReportedRuntimeMs(stdout?: string, stderr?: string): number | undefined {
+    const combinedOutput = [stdout, stderr].filter((value): value is string => Boolean(value)).join("\n");
+    if (combinedOutput.length === 0) {
+      return undefined;
+    }
+
+    const summaryMatch = combinedOutput.match(/(?:^|\n)[^\S\r\n]*[iℹ]\s+duration_ms\s+([0-9.]+)\s*(?:\n|$)/);
+    if (summaryMatch?.[1]) {
+      return Number(summaryMatch[1]);
+    }
+
+    const diagnosticMatches = [...combinedOutput.matchAll(/duration_ms:\s*([0-9.]+)/g)];
+    if (diagnosticMatches.length > 0) {
+      const lastMatch = diagnosticMatches[diagnosticMatches.length - 1]?.[1];
+      if (lastMatch) {
+        return Number(lastMatch);
+      }
+    }
+
+    return undefined;
   }
 
   // Send the latest data to the UI
