@@ -1,0 +1,3 @@
+{
+  "testCaseAnalysis.testCommandTemplate": "node --test --test-name-pattern ${testNamePattern} ${relativeFile}"
+}

@@ -12,20 +12,25 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:testCaseAnalysis.helloWorld",
+    "onCommand:testCaseAnalysis.selectFiles",
+    "onCommand:testCaseAnalysis.profileTests",
+    "onCommand:testCaseAnalysis.runTestsEfficiently",
     "onView:testCaseAnalysis.sidebarView"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "testCaseAnalysis.helloWorld",
-        "title": "Test Case Analysis: Run Hello World"
+        "command": "testCaseAnalysis.selectFiles",
+        "title": "Test Case Analysis: Select Test Files"
       },
       {
-        "command": "testCaseAnalysis.refreshSidebar",
-        "title": "Test Case Analysis: Refresh Sidebar",
-        "icon": "$(refresh)"
+        "command": "testCaseAnalysis.profileTests",
+        "title": "Test Case Analysis: Profile Tests"
+      },
+      {
+        "command": "testCaseAnalysis.runTestsEfficiently",
+        "title": "Test Case Analysis: Run Tests Efficiently"
       }
     ],
     "viewsContainers": {
@@ -41,18 +46,20 @@
       "testCaseAnalysis": [
         {
           "id": "testCaseAnalysis.sidebarView",
-          "name": "Test Case Analysis"
+          "name": "Test Case Analysis",
+          "type": "webview"
         }
       ]
     },
-    "menus": {
-      "view/title": [
-        {
-          "command": "testCaseAnalysis.refreshSidebar",
-          "when": "view == testCaseAnalysis.sidebarView",
-          "group": "navigation"
+    "configuration": {
+      "title": "Test Case Analysis",
+      "properties": {
+        "testCaseAnalysis.testCommandTemplate": {
+          "type": "string",
+          "default": "node --test --test-name-pattern ${testNamePattern} ${relativeFile}",
+          "description": "Command used to run one discovered test case. Use ${file}, ${relativeFile}, ${testName}, or ${testNamePattern} in the command."
         }
-      ]
+      }
     }
   },
   "scripts": {
