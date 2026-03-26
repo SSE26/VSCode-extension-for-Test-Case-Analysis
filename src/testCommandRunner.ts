@@ -48,13 +48,31 @@ export async function executeSingleTestCase(
       .filter((value) => Boolean(value))
       .join("\n")
       .trim();
+
+    const regexFilter = /\{[^{}]*\}/s;
+    var actual: string | undefined = undefined;
+    var expected: string | undefined = undefined;
+    if (errorMessage != null) {
+      const jsonMatch = errorMessage.match(regexFilter);
+      if (jsonMatch != null) {
+        const jsonString = jsonMatch[0]
+          .replace(/(\w+):/g, '"$1":')
+          .replace(/'/g, '"');
+        const parsed = JSON.parse(jsonString);
+        actual = parsed.actual;
+        expected = parsed.expected;
+      }
+    }
+
     return {
       uri,
       testName,
       runtimeMs: runtimeMs ?? 0,
       profiledRuntimeMs: runtimeMs ?? 0,
       lastRunPassed: false,
-      errorMessage
+      errorMessage,
+      actual,
+      expected
     };
   }
 }

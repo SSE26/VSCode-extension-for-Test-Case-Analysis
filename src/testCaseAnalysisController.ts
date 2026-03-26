@@ -151,7 +151,9 @@ export class TestCaseAnalysisController {
           runtimeMs: result.runtimeMs,
           profiledRuntimeMs: test.profiledRuntimeMs,
           lastRunPassed: result.lastRunPassed,
-          errorMessage: result.errorMessage
+          errorMessage: result.errorMessage,
+          actual: result.actual,
+          expected: result.expected
         };
         executedTests.push(executedTest);
         this.state.efficientRunTests = [...executedTests];
@@ -243,14 +245,18 @@ export class TestCaseAnalysisController {
           testName: test.testName,
           runtimeMs: test.runtimeMs,
           profiledRuntimeMs: test.profiledRuntimeMs,
-          lastRunPassed: test.lastRunPassed
+          lastRunPassed: test.lastRunPassed,
+          actual: test.actual,
+          expected: test.expected
         })),
         efficientRunTests: this.state.efficientRunTests.map((test) => ({
           fileName: this.formatFileName(test.uri),
           testName: test.testName,
           runtimeMs: test.runtimeMs,
           profiledRuntimeMs: test.profiledRuntimeMs,
-          lastRunPassed: test.lastRunPassed
+          lastRunPassed: test.lastRunPassed,
+          actual: test.actual,
+          expected: test.expected
         })),
         isBusy: this.state.isBusy,
         status: this.state.status

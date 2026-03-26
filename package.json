@@ -56,7 +56,7 @@
       "properties": {
         "testCaseAnalysis.testCommandTemplate": {
           "type": "string",
-          "default": "node --test --test-name-pattern ${testNamePattern} ${relativeFile}",
+          "default": "node --test --test-reporter=spec --test-name-pattern ${testNamePattern} ${relativeFile}",
           "description": "Command used to run one discovered test case. Use ${file}, ${relativeFile}, ${testName}, or ${testNamePattern} in the command."
         }
       }
