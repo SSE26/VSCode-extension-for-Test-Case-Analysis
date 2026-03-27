@@ -60,18 +60,18 @@ export function getWebviewHtml(): string {
     }
 
     .result-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
+      margin: 4px 0;
+      word-break: break-word;
     }
 
     .result-text {
-      min-width: 0;
       word-break: break-word;
     }
 
     .badge {
+      display: inline-block;
+      margin-left: 8px;
+      vertical-align: middle;
       flex-shrink: 0;
       padding: 2px 8px;
       border-radius: 999px;
