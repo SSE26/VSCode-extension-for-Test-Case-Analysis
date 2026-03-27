@@ -59,6 +59,38 @@ export function getWebviewHtml(): string {
       color: var(--vscode-descriptionForeground);
     }
 
+    .result-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .result-text {
+      min-width: 0;
+      word-break: break-word;
+    }
+
+    .badge {
+      flex-shrink: 0;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .badge.pass {
+      color: #2ea043;
+      background: rgba(46, 160, 67, 0.15);
+      border: 1px solid rgba(46, 160, 67, 0.45);
+    }
+
+    .badge.fail {
+      color: #f85149;
+      background: rgba(248, 81, 73, 0.15);
+      border: 1px solid rgba(248, 81, 73, 0.45);
+    }
+
     ul {
       margin: 0;
       padding-left: 18px;
@@ -73,6 +105,7 @@ export function getWebviewHtml(): string {
 <body>
   <div class="stack">
     <button id="selectFiles">Select Test Files</button>
+    <button id="selectFolder">Select Test Folder</button>
     <button id="profileTests">Profile Tests</button>
     <button id="runEfficiently">Run Tests Efficiently</button>
 
@@ -105,12 +138,17 @@ export function getWebviewHtml(): string {
     const statusElement = document.getElementById("status");
     const buttons = {
       selectFiles: document.getElementById("selectFiles"),
+      selectFolder: document.getElementById("selectFolder"),
       profileTests: document.getElementById("profileTests"),
       runEfficiently: document.getElementById("runEfficiently")
     };
 
     buttons.selectFiles.addEventListener("click", () => {
       vscode.postMessage({ command: "selectFiles" });
+    });
+
+    buttons.selectFolder.addEventListener("click", () => {
+      vscode.postMessage({ command: "selectFolder" });
     });
 
     buttons.profileTests.addEventListener("click", () => {
@@ -135,23 +173,16 @@ export function getWebviewHtml(): string {
       }
 
       selectedFilesElement.replaceChildren(...toItems(state.selectedFiles, (path) => path));
-      profiledTestsElement.replaceChildren(...toItems(
+      profiledTestsElement.replaceChildren(...toResultItems(
         state.profiledTests,
-        (test) => {
-          const status = test.lastRunPassed ? "PASS" : "FAIL";
-          return test.fileName + " :: " + test.testName + " - " + test.runtimeMs.toFixed(2) + " ms - " + status;
-        }
+        (test) => test.fileName + " :: " + test.testName + " - " + test.runtimeMs.toFixed(2) + " ms"
       ));
 
-      efficientRunTestsElement.replaceChildren(...toItems(
+      efficientRunTestsElement.replaceChildren(...toResultItems(
         state.efficientRunTests,
-        (test) => {
-          const status = test.lastRunPassed ? "PASS" : "FAIL";
-          return test.fileName
-            + " :: " + test.testName
-            + " - " + test.profiledRuntimeMs.toFixed(2) + " ms"
-            + " - " + status;
-        }
+        (test) => test.fileName
+          + " :: " + test.testName
+          + " - " + test.profiledRuntimeMs.toFixed(2) + " ms"
       ));
     });
 
@@ -165,6 +196,30 @@ export function getWebviewHtml(): string {
       return values.map((value) => {
         const item = document.createElement("li");
         item.textContent = formatter(value);
+        return item;
+      });
+    }
+
+    function toResultItems(values, formatter) {
+      if (!values || values.length === 0) {
+        const item = document.createElement("li");
+        item.textContent = "None";
+        return [item];
+      }
+
+      return values.map((value) => {
+        const item = document.createElement("li");
+        item.className = "result-item";
+
+        const text = document.createElement("span");
+        text.className = "result-text";
+        text.textContent = formatter(value);
+
+        const badge = document.createElement("span");
+        badge.className = value.lastRunPassed ? "badge pass" : "badge fail";
+        badge.textContent = value.lastRunPassed ? "✅ PASS" : "❌ FAIL";
+
+        item.append(text, badge);
         return item;
       });
     }
