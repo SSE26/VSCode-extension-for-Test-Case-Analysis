@@ -20,6 +20,48 @@ export class TestCaseAnalysisController {
 
   private view?: vscode.WebviewView;
 
+  // Let the user select an entire folder and include all supported test files inside it
+  async selectFolder(): Promise<void> {
+    const workspaceFolder = this.getPrimaryWorkspaceFolder();
+    const uris = await vscode.window.showOpenDialog({
+      canSelectMany: false,
+      canSelectFiles: false,
+      canSelectFolders: true,
+      defaultUri: workspaceFolder?.uri,
+      openLabel: "Select Test Folder"
+    });
+
+    if (!uris || uris.length === 0) {
+      return;
+    }
+
+    const folderUri = uris[0];
+
+    const candidateFiles = await vscode.workspace.findFiles(
+      new vscode.RelativePattern(folderUri, "**/*")
+    );
+
+    const supportedFiles = filterSupportedTestFiles(candidateFiles);
+
+    if (supportedFiles.length === 0) {
+      this.state.selectedFiles = [];
+      this.state.profiledTests = [];
+      this.state.efficientRunTests = [];
+      this.state.status = "No supported test files were found in the selected folder.";
+      this.postState();
+      void vscode.window.showWarningMessage(
+        "No supported JavaScript or TypeScript test files were found in the selected folder."
+      );
+      return;
+    }
+
+    this.state.selectedFiles = supportedFiles;
+    this.state.profiledTests = [];
+    this.state.efficientRunTests = [];
+    this.state.status = `Selected ${supportedFiles.length} test file${supportedFiles.length === 1 ? "" : "s"} from folder.`;
+    this.postState();
+  }
+
   // Custom sidebar screen that allows users to select test files, profile tests, and run them efficiently
   resolveWebviewView(view: vscode.WebviewView): void {
     this.view = view;
@@ -31,6 +73,9 @@ export class TestCaseAnalysisController {
       switch (message.command) {
         case "selectFiles":
           void this.selectFiles();
+          break;
+        case "selectFolder":
+          void this.selectFolder();
           break;
         case "profileTests":
           void this.profileSelectedTests();

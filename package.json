@@ -13,6 +13,7 @@
   ],
   "activationEvents": [
     "onCommand:testCaseAnalysis.selectFiles",
+    "onCommand:testCaseAnalysis.selectFolder",
     "onCommand:testCaseAnalysis.profileTests",
     "onCommand:testCaseAnalysis.runTestsEfficiently",
     "onView:testCaseAnalysis.sidebarView"
@@ -23,6 +24,10 @@
       {
         "command": "testCaseAnalysis.selectFiles",
         "title": "Test Case Analysis: Select Test Files"
+      },
+      {
+        "command": "testCaseAnalysis.selectFolder",
+        "title": "Test Case Analysis: Select Test Folder"
       },
       {
         "command": "testCaseAnalysis.profileTests",
