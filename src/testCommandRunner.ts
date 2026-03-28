@@ -37,14 +37,14 @@ export async function executeSingleTestCase(
 
     let stdout = "";
     let stderr = "";
-    let energyJ = 0;
-    let lastPollTime = Date.now();
+    // Collect CPU% samples over the lifetime of the process
+    const cpuSamples: number[] = [];
     let polling = false;
 
     child.stdout?.on("data", (chunk: Buffer) => { stdout += chunk.toString(); });
     child.stderr?.on("data", (chunk: Buffer) => { stderr += chunk.toString(); });
 
-    // Periodically sample the child's CPU usage and accumulate energy
+    // Periodically sample the child's CPU usage
     const poll = setInterval(() => {
       const pid = child.pid;
       if (pid === undefined || polling) {
@@ -53,11 +53,7 @@ export async function executeSingleTestCase(
       polling = true;
       pidusage(pid)
         .then((stats) => {
-          const now = Date.now();
-          const dtS = (now - lastPollTime) / 1000;
-          // Estimated energy = (cpu_fraction × TDP + idle_baseline) × Δtime
-          energyJ += (stats.cpu / 100 * tdpW + idleBaselineW) * dtS;
-          lastPollTime = now;
+          cpuSamples.push(stats.cpu);
         })
         .catch(() => {
           // Process may have just exited — safe to ignore
@@ -72,6 +68,17 @@ export async function executeSingleTestCase(
       void pidusage.clear();
 
       const runtimeMs = getReportedRuntimeMs(stdout, stderr) ?? 0;
+      const runtimeS = runtimeMs / 1000;
+
+      // Average CPU fraction across all samples; 0 if the process was too short to sample
+      const avgCpuFraction = cpuSamples.length > 0
+        ? cpuSamples.reduce((sum, s) => sum + s, 0) / cpuSamples.length / 100
+        : 0;
+
+      // Estimated energy = (avg_cpu_fraction × TDP + idle_baseline) × total_duration
+      // The idle baseline ensures even sub-100ms tests produce a non-zero result
+      const energyJ = (avgCpuFraction * tdpW + idleBaselineW) * runtimeS;
+
       resolve({
         uri,
         testName,
