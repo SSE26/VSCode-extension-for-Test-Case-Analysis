@@ -115,7 +115,7 @@ export class TestCaseAnalysisController {
         profiledTests.push(result);
       }
 
-      profiledTests.sort((left, right) => left.runtimeMs - right.runtimeMs);
+      profiledTests.sort((left, right) => left.energyJ - right.energyJ);
       this.state.profiledTests = profiledTests;
       this.state.efficientRunTests = [];
       this.state.status = `Profiled ${profiledTests.length} individual test case${profiledTests.length === 1 ? "" : "s"}.`;
@@ -148,6 +148,8 @@ export class TestCaseAnalysisController {
         const executedTest: TestRuntime = {
           uri: test.uri,
           testName: test.testName,
+          energyJ: result.energyJ,
+          profiledEnergyJ: test.profiledEnergyJ,
           runtimeMs: result.runtimeMs,
           profiledRuntimeMs: test.profiledRuntimeMs,
           lastRunPassed: result.lastRunPassed,
@@ -165,7 +167,7 @@ export class TestCaseAnalysisController {
         }
       }
 
-      this.state.status = `Executed ${executedTests.length} individual test case${executedTests.length === 1 ? "" : "s"} in runtime order.`;
+      this.state.status = `Executed ${executedTests.length} individual test case${executedTests.length === 1 ? "" : "s"} in energy order.`;
       void vscode.window.showInformationMessage("Efficient test run completed without failures.");
     });
   }
@@ -241,6 +243,8 @@ export class TestCaseAnalysisController {
         profiledTests: this.state.profiledTests.map((test) => ({
           fileName: this.formatFileName(test.uri),
           testName: test.testName,
+          energyJ: test.energyJ,
+          profiledEnergyJ: test.profiledEnergyJ,
           runtimeMs: test.runtimeMs,
           profiledRuntimeMs: test.profiledRuntimeMs,
           lastRunPassed: test.lastRunPassed
@@ -248,6 +252,8 @@ export class TestCaseAnalysisController {
         efficientRunTests: this.state.efficientRunTests.map((test) => ({
           fileName: this.formatFileName(test.uri),
           testName: test.testName,
+          energyJ: test.energyJ,
+          profiledEnergyJ: test.profiledEnergyJ,
           runtimeMs: test.runtimeMs,
           profiledRuntimeMs: test.profiledRuntimeMs,
           lastRunPassed: test.lastRunPassed
