@@ -187,7 +187,7 @@ export function getWebviewHtml(): string {
           const status = test.lastRunPassed ? "PASS" : "FAIL";
           return test.fileName
             + " :: " + test.testName
-            + " - " + (test.profiledEnergyJ * 1000).toFixed(3) + " mJ"
+            + " - " + (test.energyJ * 1000).toFixed(3) + " mJ"
             + " - " + status;
         }
       ));
