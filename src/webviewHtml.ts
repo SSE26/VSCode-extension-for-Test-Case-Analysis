@@ -87,7 +87,7 @@ export function getWebviewHtml(): string {
     </div>
 
     <div class="panel">
-      <p class="title">Measured Test Runtimes</p>
+      <p class="title">Measured Test Energy</p>
       <ul id="profiledTests"></ul>
     </div>
 
@@ -139,7 +139,7 @@ export function getWebviewHtml(): string {
         state.profiledTests,
         (test) => {
           const status = test.lastRunPassed ? "PASS" : "FAIL";
-          return test.fileName + " :: " + test.testName + " - " + test.runtimeMs.toFixed(2) + " ms - " + status;
+          return test.fileName + " :: " + test.testName + " - " + (test.energyJ * 1000).toFixed(3) + " mJ - " + status;
         }
       ));
 
@@ -149,7 +149,7 @@ export function getWebviewHtml(): string {
           const status = test.lastRunPassed ? "PASS" : "FAIL";
           return test.fileName
             + " :: " + test.testName
-            + " - " + test.profiledRuntimeMs.toFixed(2) + " ms"
+            + " - " + (test.profiledEnergyJ * 1000).toFixed(3) + " mJ"
             + " - " + status;
         }
       ));
