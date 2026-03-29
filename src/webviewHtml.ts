@@ -129,7 +129,7 @@ export function getWebviewHtml(): string {
     </div>
 
     <div class="panel">
-      <p class="title">Measured Test Energy</p>
+      <p class="title">Weighted Test Energy</p>
       <ul id="profiledTests"></ul>
       <div id="profiledTotal" class="total"></div>
     </div>
@@ -189,9 +189,9 @@ export function getWebviewHtml(): string {
 
       profiledTestsElement.replaceChildren(...toResultItems(
         state.profiledTests,
-        (test) => test.fileName + " :: " + test.testName + " - " + (test.energyJ * 1000).toFixed(3) + " mJ"
+        (test) => test.fileName + " :: " + test.testName + " - " + (test.profiledEnergyJ * 1000).toFixed(3) + " mJ"
       ));
-      const profiledTotal = (state.profiledTests || []).reduce((sum, t) => sum + t.energyJ, 0);
+      const profiledTotal = (state.profiledTests || []).reduce((sum, t) => sum + t.profiledEnergyJ, 0);
       profiledTotalElement.textContent = state.profiledTests && state.profiledTests.length > 0
         ? "Total: " + (profiledTotal * 1000).toFixed(3) + " mJ"
         : "";
