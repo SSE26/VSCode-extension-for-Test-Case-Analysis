@@ -1,11 +1,13 @@
 import * as vscode from "vscode";
-import { exec } from "child_process";
-import { promisify } from "util";
+import { spawn } from "child_process";
+import pidusage from "pidusage";
+import { detectTdpWatts, getIdleBaselineW } from "./cpuEnergyEstimator";
 import { TestRuntime } from "./testCaseAnalysisTypes";
 
-const execAsync = promisify(exec);
+// How often (ms) to sample the child process CPU usage
+const POLL_INTERVAL_MS = 100;
 
-// Run one test case and measure how long it takes
+// Run one test case and estimate how much energy it consumes
 export async function executeSingleTestCase(
   uri: vscode.Uri,
   testName: string,
@@ -13,50 +15,99 @@ export async function executeSingleTestCase(
 ): Promise<TestRuntime> {
   const workspaceFolder = getWorkspaceFolderForUri(uri);
   const command = buildCommand(uri, testName, commandTemplate, workspaceFolder);
+  const cwd = workspaceFolder?.uri.fsPath ?? vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
 
-  try {
-    const execution = await execAsync(command, {
-      cwd: workspaceFolder?.uri.fsPath ?? vscode.workspace.rootPath,
+  const tdpW = await detectTdpWatts();
+  const idleBaselineW = getIdleBaselineW(tdpW);
+
+  return new Promise<TestRuntime>((resolve) => {
+    // Parse the command string into [executable, ...args] so we spawn the test
+    // process directly — this gives us the real PID, not a shell wrapper.
+    // Limitation: on Windows, .cmd-based commands (npx, jest) must be spelled
+    // with the .cmd extension in the command template (e.g. npx.cmd).
+    const [executable, ...args] = parseCommand(command);
+
+    const child = spawn(executable, args, {
+      cwd,
       windowsHide: true,
-      maxBuffer: 10 * 1024 * 1024
+      // No shell: we want the direct PID of the Node process for CPU tracking.
+      // The default command (node --test ...) works on all platforms without a shell.
+      shell: false
     });
-    const runtimeMs = getReportedRuntimeMs(execution.stdout, execution.stderr);
-    if (runtimeMs === undefined) {
-      throw new Error("Could not read duration_ms from node --test output.");
-    }
 
-    return {
-      uri,
-      testName,
-      runtimeMs,
-      profiledRuntimeMs: runtimeMs,
-      lastRunPassed: true,
-      errorMessage: ""
-    };
-  } catch (error) {
-    const execError = error as {
-      message?: string;
-      stderr?: string;
-      stdout?: string;
-    };
-    const runtimeMs = getReportedRuntimeMs(execError.stdout, execError.stderr);
-    const errorMessage = [
-      execError.message,
-      execError.stderr?.trim(),
-      execError.stdout?.trim()
-    ]
-      .filter((value) => Boolean(value))
-      .join("\n")
-      .trim();
-    return {
-      uri,
-      testName,
-      runtimeMs: runtimeMs ?? 0,
-      profiledRuntimeMs: runtimeMs ?? 0,
-      lastRunPassed: false,
-      errorMessage
-    };
-  }
+    let stdout = "";
+    let stderr = "";
+    // Collect CPU% samples over the lifetime of the process
+    const cpuSamples: number[] = [];
+    let polling = false;
+
+    child.stdout?.on("data", (chunk: Buffer) => { stdout += chunk.toString(); });
+    child.stderr?.on("data", (chunk: Buffer) => { stderr += chunk.toString(); });
+
+    // Periodically sample the child's CPU usage
+    const poll = setInterval(() => {
+      const pid = child.pid;
+      if (pid === undefined || polling) {
+        return;
+      }
+      polling = true;
+      pidusage(pid)
+        .then((stats) => {
+          cpuSamples.push(stats.cpu);
+        })
+        .catch(() => {
+          // Process may have just exited — safe to ignore
+        })
+        .finally(() => {
+          polling = false;
+        });
+    }, POLL_INTERVAL_MS);
+
+    child.on("close", (code) => {
+      clearInterval(poll);
+      void pidusage.clear();
+
+      const runtimeMs = getReportedRuntimeMs(stdout, stderr) ?? 0;
+      const runtimeS = runtimeMs / 1000;
+
+      // Average CPU fraction across all samples; 0 if the process was too short to sample
+      const avgCpuFraction = cpuSamples.length > 0
+        ? cpuSamples.reduce((sum, s) => sum + s, 0) / cpuSamples.length / 100
+        : 0;
+
+      // Estimated energy = (avg_cpu_fraction × TDP + idle_baseline) × total_duration
+      // The idle baseline ensures even sub-100ms tests produce a non-zero result
+      const energyJ = (avgCpuFraction * tdpW + idleBaselineW) * runtimeS;
+
+      resolve({
+        uri,
+        testName,
+        energyJ,
+        profiledEnergyJ: energyJ,
+        runtimeMs,
+        profiledRuntimeMs: runtimeMs,
+        lastRunPassed: code === 0,
+        errorMessage: code !== 0
+          ? [stderr?.trim(), stdout?.trim()].filter(Boolean).join("\n").trim()
+          : ""
+      });
+    });
+
+    child.on("error", (err) => {
+      clearInterval(poll);
+      void pidusage.clear();
+      resolve({
+        uri,
+        testName,
+        energyJ: 0,
+        profiledEnergyJ: 0,
+        runtimeMs: 0,
+        profiledRuntimeMs: 0,
+        lastRunPassed: false,
+        errorMessage: err.message
+      });
+    });
+  });
 }
 
 // Read the test command from the extension settings
@@ -86,6 +137,39 @@ function buildCommand(
     .replaceAll("${testNamePattern}", quoteShellArgument(escapeRegex(testName)));
 }
 
+// Split a shell-style command string into [executable, ...args].
+// Handles double-quoted tokens (stripping the quotes).
+function parseCommand(command: string): [string, ...string[]] {
+  const tokens: string[] = [];
+  let current = "";
+  let inQuotes = false;
+
+  for (const char of command) {
+    if (char === '"' && !inQuotes) {
+      inQuotes = true;
+    } else if (char === '"' && inQuotes) {
+      inQuotes = false;
+    } else if (char === " " && !inQuotes) {
+      if (current.length > 0) {
+        tokens.push(current);
+        current = "";
+      }
+    } else {
+      current += char;
+    }
+  }
+
+  if (current.length > 0) {
+    tokens.push(current);
+  }
+
+  if (tokens.length === 0) {
+    throw new Error("Command template produced an empty command.");
+  }
+
+  return tokens as [string, ...string[]];
+}
+
 // Get main project folder
 function getPrimaryWorkspaceFolder(): vscode.WorkspaceFolder | undefined {
   return vscode.workspace.workspaceFolders?.[0];
@@ -96,7 +180,7 @@ function getWorkspaceFolderForUri(uri: vscode.Uri): vscode.WorkspaceFolder | und
   return vscode.workspace.getWorkspaceFolder(uri) ?? getPrimaryWorkspaceFolder();
 }
 
-// Put strings in quotes, to make sure terminal understands
+// Put strings in quotes, to make sure the terminal understands
 function quoteShellArgument(value: string): string {
   return `"${value.replace(/"/g, '\\"')}"`;
 }

@@ -100,6 +100,15 @@ export function getWebviewHtml(): string {
       margin: 4px 0;
       word-break: break-word;
     }
+
+    .total {
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px solid var(--vscode-panel-border);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--vscode-foreground);
+    }
   </style>
 </head>
 <body>
@@ -120,13 +129,15 @@ export function getWebviewHtml(): string {
     </div>
 
     <div class="panel">
-      <p class="title">Measured Test Runtimes</p>
+      <p class="title">Measured Test Energy</p>
       <ul id="profiledTests"></ul>
+      <div id="profiledTotal" class="total"></div>
     </div>
 
     <div class="panel">
       <p class="title">Efficient Run Results</p>
       <ul id="efficientRunTests"></ul>
+      <div id="efficientTotal" class="total"></div>
     </div>
   </div>
 
@@ -134,7 +145,9 @@ export function getWebviewHtml(): string {
     const vscode = acquireVsCodeApi();
     const selectedFilesElement = document.getElementById("selectedFiles");
     const profiledTestsElement = document.getElementById("profiledTests");
+    const profiledTotalElement = document.getElementById("profiledTotal");
     const efficientRunTestsElement = document.getElementById("efficientRunTests");
+    const efficientTotalElement = document.getElementById("efficientTotal");
     const statusElement = document.getElementById("status");
     const buttons = {
       selectFiles: document.getElementById("selectFiles"),
@@ -173,17 +186,24 @@ export function getWebviewHtml(): string {
       }
 
       selectedFilesElement.replaceChildren(...toItems(state.selectedFiles, (path) => path));
+
       profiledTestsElement.replaceChildren(...toResultItems(
         state.profiledTests,
-        (test) => test.fileName + " :: " + test.testName + " - " + test.runtimeMs.toFixed(2) + " ms"
+        (test) => test.fileName + " :: " + test.testName + " - " + (test.energyJ * 1000).toFixed(3) + " mJ"
       ));
+      const profiledTotal = (state.profiledTests || []).reduce((sum, t) => sum + t.energyJ, 0);
+      profiledTotalElement.textContent = state.profiledTests && state.profiledTests.length > 0
+        ? "Total: " + (profiledTotal * 1000).toFixed(3) + " mJ"
+        : "";
 
       efficientRunTestsElement.replaceChildren(...toResultItems(
         state.efficientRunTests,
-        (test) => test.fileName
-          + " :: " + test.testName
-          + " - " + test.profiledRuntimeMs.toFixed(2) + " ms"
+        (test) => test.fileName + " :: " + test.testName + " - " + (test.energyJ * 1000).toFixed(3) + " mJ"
       ));
+      const efficientTotal = (state.efficientRunTests || []).reduce((sum, t) => sum + t.energyJ, 0);
+      efficientTotalElement.textContent = state.efficientRunTests && state.efficientRunTests.length > 0
+        ? "Total: " + (efficientTotal * 1000).toFixed(3) + " mJ"
+        : "";
     });
 
     function toItems(values, formatter) {
