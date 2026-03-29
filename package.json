@@ -4,6 +4,11 @@
   "description": "A simple TypeScript VS Code extension with a custom sidebar view.",
   "version": "0.0.1",
   "publisher": "local",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SSE26/VSCode-extension-for-Test-Case-Analysis.git"
+  },
   "engines": {
     "vscode": "^1.97.0"
   },

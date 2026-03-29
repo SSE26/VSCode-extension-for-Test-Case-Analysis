@@ -1,0 +1,10 @@
+.vscode/**
+src/**
+scripts/**
+examples/**
+docs/**
+node_modules/**
+.git/**
+.gitignore
+tsconfig.json
+test-case-analysis-*.vsix
