@@ -1,5 +1,16 @@
 import * as vscode from "vscode";
 
+export type TestProfileIdentity = {
+  relativeFile: string;
+  testName: string;
+  sourceHash?: string;
+  cacheable: boolean;
+};
+
+export type DiscoveredTestCase = TestProfileIdentity & {
+  uri: vscode.Uri;
+};
+
 // Store test info
 export type TestRuntime = {
   uri: vscode.Uri;
@@ -15,11 +26,28 @@ export type TestRuntime = {
   errorMessage?: string;
 };
 
+export type ProfiledTestRuntime = TestRuntime & TestProfileIdentity;
+
+export type PersistedTestProfile = {
+  relativeFile: string;
+  testName: string;
+  sourceHash: string;
+  weightedEnergyJ: number;
+  lastMeasuredEnergyJ: number;
+  sampleCount: number;
+  lastUpdatedAt: string;
+};
+
+export type TestProfileCacheFile = {
+  version: 1;
+  entries: Record<string, PersistedTestProfile>;
+};
+
 // Store test info
 export type ViewState = {
   selectedFiles: vscode.Uri[];
-  profiledTests: TestRuntime[];
-  efficientRunTests: TestRuntime[];
+  profiledTests: ProfiledTestRuntime[];
+  efficientRunTests: ProfiledTestRuntime[];
   isBusy: boolean;
   status: string;
 };
