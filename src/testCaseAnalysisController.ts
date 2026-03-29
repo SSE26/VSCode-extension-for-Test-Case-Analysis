@@ -1,7 +1,13 @@
 import * as vscode from "vscode";
 import { getWebviewHtml } from "./webviewHtml";
 import { executeSingleTestCase, getConfiguredCommand } from "./testCommandRunner";
-import { DiscoveredTestCase, ProfiledTestRuntime, TestRuntime, ViewState } from "./testCaseAnalysisTypes";
+import {
+  DiscoveredTestCase,
+  PersistedTestProfile,
+  ProfiledTestRuntime,
+  TestRuntime,
+  ViewState
+} from "./testCaseAnalysisTypes";
 import {
   discoverTestsInFiles,
   filterSupportedTestFiles,
@@ -179,24 +185,22 @@ export class TestCaseAnalysisController {
 
   // Run the saved tests from fastest to slowest
   async runTestsEfficiently(): Promise<void> {
-    if (this.state.profiledTests.length === 0) {
-      void vscode.window.showWarningMessage("Profile the selected test cases before running them efficiently.");
-      return;
-    }
-
     if (!(await this.ensureSelectedFiles())) {
       return;
     }
 
     const efficientCommandTemplate = getConfiguredCommand();
     const profileCache = await TestProfileCache.load(this.getCacheRootPath());
+    const testsInEnergyOrder = await this.resolveTestsInEnergyOrder(profileCache);
+    if (testsInEnergyOrder === undefined) {
+      return;
+    }
 
     await this.runBusyTask("Running profiled tests from lowest to highest energy...", async () => {
       try {
         const executedTests: ProfiledTestRuntime[] = [];
         this.state.efficientRunTests = [];
         this.postState();
-        const testsInEnergyOrder = [...this.state.profiledTests].sort((a, b) => a.profiledEnergyJ - b.profiledEnergyJ);
         for (const test of testsInEnergyOrder) {
           const result = await executeSingleTestCase(
             test.uri,
@@ -224,6 +228,42 @@ export class TestCaseAnalysisController {
         this.showCacheFlushMessage(await profileCache.flush(), "Efficient run");
       }
     });
+  }
+
+  private async resolveTestsInEnergyOrder(profileCache: TestProfileCache): Promise<ProfiledTestRuntime[] | undefined> {
+    if (this.state.profiledTests.length > 0) {
+      return [...this.state.profiledTests].sort((a, b) => a.profiledEnergyJ - b.profiledEnergyJ);
+    }
+
+    const discoveredTests = await discoverTestsInFiles(this.state.selectedFiles);
+    if (discoveredTests.length === 0) {
+      this.state.profiledTests = [];
+      this.state.efficientRunTests = [];
+      this.state.status = "No individual test cases were found in the selected files.";
+      this.postState();
+      void vscode.window.showWarningMessage(
+        "No individual test cases were found. This discovery step currently supports direct test(...) and it(...) calls."
+      );
+      return undefined;
+    }
+
+    const cachedProfiledTests: ProfiledTestRuntime[] = [];
+    for (const discoveredTest of discoveredTests) {
+      const persistedProfile = profileCache.getPersistedProfile(discoveredTest);
+      if (persistedProfile === undefined) {
+        void vscode.window.showWarningMessage("Profile the selected test cases before running them efficiently.");
+        return undefined;
+      }
+
+      cachedProfiledTests.push(this.createCachedProfiledTestRuntime(discoveredTest, persistedProfile));
+    }
+
+    this.state.profiledTests = cachedProfiledTests;
+    this.state.efficientRunTests = [];
+    this.state.status = `Loaded ${cachedProfiledTests.length} cached test case profile${cachedProfiledTests.length === 1 ? "" : "s"} for efficient ordering.`;
+    this.postState();
+
+    return [...cachedProfiledTests].sort((a, b) => a.profiledEnergyJ - b.profiledEnergyJ);
   }
 
   // Make sure that the user has selected files
@@ -305,6 +345,25 @@ export class TestCaseAnalysisController {
       cacheable: discoveredTest.cacheable,
       profiledEnergyJ,
       profiledRuntimeMs
+    };
+  }
+
+  private createCachedProfiledTestRuntime(
+    discoveredTest: DiscoveredTestCase,
+    persistedProfile: PersistedTestProfile
+  ): ProfiledTestRuntime {
+    return {
+      uri: discoveredTest.uri,
+      relativeFile: discoveredTest.relativeFile,
+      testName: discoveredTest.testName,
+      sourceHash: discoveredTest.sourceHash,
+      cacheable: discoveredTest.cacheable,
+      energyJ: persistedProfile.lastMeasuredEnergyJ,
+      profiledEnergyJ: persistedProfile.weightedEnergyJ,
+      runtimeMs: 0,
+      profiledRuntimeMs: 0,
+      lastRunPassed: true,
+      errorMessage: ""
     };
   }
 
