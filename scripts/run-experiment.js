@@ -4,39 +4,47 @@
 /**
  * run-experiment.js
  *
- * Standalone experiment runner for the energy-aware test prioritisation study.
+ * Experiment runner for: "Does energy-aware test ordering save energy?"
  *
- * This script replicates the measurement logic from testCommandRunner.ts
- * directly — no VSCode, no extension host, no IPC needed.
+ * Design
+ * ───────
+ * For each sampled test file we run both strategies and record the energy:
  *
- * What it measures
- * ─────────────────
- * For each sampled test file it discovers the individual test cases (via
- * --test-reporter=json), then runs two strategies back-to-back:
+ *   baseline   — runs test cases in discovery order (control)
+ *   efficient  — runs test cases sorted by energy ascending (treatment)
  *
- *   profiling  — runs every test case individually in file order, records energy + duration
- *   efficient  — sorts those results by energy ascending, reruns in that order
- *                (stops on first failure, mirroring the extension's behaviour)
+ * Each file yields one paired observation (baseline_energy, efficient_energy).
+ * The full dataset of pairs is what you feed into a paired t-test or
+ * Wilcoxon signed-rank test to answer the research question.
+ *
+ * Key design choices
+ * ───────────────────
+ * • Randomised strategy order per file: for each file we flip a coin on
+ *   whether baseline or efficient runs first. This prevents OS file caching
+ *   from systematically favouring whichever strategy always goes second.
+ *
+ * • Sample size: 200 files × 30 runs = 6000 paired observations.
+ *   Well above the ~100 minimum for a paired test at 95% CI / 80% power,
+ *   and accounts for the high noise of CPU-polling-based energy estimation.
+ *
+ * • Cooldown between measurements: 500 ms lets the CPU frequency governor
+ *   settle between consecutive child processes.
  *
  * Energy model (identical to testCommandRunner.ts)
  * ─────────────────────────────────────────────────
  *   energyJ = (avgCpuFraction × tdpW + idleBaselineW) × runtimeS
  *
- *   tdpW          estimated from os.cpus() model string (same heuristic as the extension)
- *   idleBaselineW = tdpW × 0.1
- *   avgCpuFraction sampled every 100 ms via pidusage
- *
  * Prerequisites
  * ──────────────
- *   npm install pidusage        (already a dependency of the extension)
+ *   npm install pidusage
  *
  * Usage
  * ──────
- *   node run-experiment.js
- *   node run-experiment.js --runs 25 --sample 50
+ *   node run-experiment.js                        # recommended defaults
+ *   node run-experiment.js --runs 30 --sample 200
  *   node run-experiment.js --dataset ./node-test-dataset/parallel
  *   node run-experiment.js --out ./my-results
- *   node run-experiment.js --dry-run    # smoke-test without real measurements
+ *   node run-experiment.js --dry-run              # smoke-test, no real measurements
  */
 
 const fs        = require('fs');
@@ -56,18 +64,15 @@ function getArg(flag, def) {
 const CONFIG = {
   datasetDir : getArg('--dataset',  path.join(__dirname, 'node-test-dataset', 'parallel')),
   outputDir  : getArg('--out',      path.join(__dirname, 'experiment-results')),
-  numRuns    : parseInt(getArg('--runs',     '25'),  10),
-  sampleSize : parseInt(getArg('--sample',   '50'),  10),
-  /** ms to sleep between consecutive test executions — lets CPU frequency settle */
+  numRuns    : parseInt(getArg('--runs',     '30'),  10),
+  sampleSize : parseInt(getArg('--sample',   '200'), 10),
   cooldownMs : parseInt(getArg('--cooldown', '500'), 10),
-  /** discarded warm-up executions before timed experiment begins */
   warmupReps : parseInt(getArg('--warmup',   '3'),   10),
-  /** CPU polling interval — matches POLL_INTERVAL_MS in testCommandRunner.ts */
-  pollMs     : 100,
+  pollMs     : 100,   // CPU sampling interval — matches testCommandRunner.ts
   dryRun     : argv.includes('--dry-run'),
 };
 
-// ─── CPU / TDP helpers (mirrors cpuEnergyEstimator.ts) ───────────────────────
+// ─── CPU / TDP (mirrors cpuEnergyEstimator.ts) ────────────────────────────────
 
 function detectTdpWatts() {
   const model = os.cpus()[0]?.model ?? '';
@@ -80,23 +85,20 @@ function detectTdpWatts() {
     [/Apple M[123]/i,           20],
     [/EPYC|Xeon|Threadripper/i, 65],
   ];
-  for (const [re, tdp] of table) {
-    if (re.test(model)) return tdp;
-  }
-  return 15; // conservative fallback
+  for (const [re, tdp] of table) if (re.test(model)) return tdp;
+  return 15;
 }
 
 const TDP_W           = detectTdpWatts();
-const IDLE_BASELINE_W = TDP_W * 0.1; // same as getIdleBaselineW() in the extension
+const IDLE_BASELINE_W = TDP_W * 0.1;
 
-// ─── Utility helpers ──────────────────────────────────────────────────────────
+// ─── Utilities ────────────────────────────────────────────────────────────────
 
-/** Synchronous sleep — keeps the script single-threaded and easy to reason about */
 function sleep(ms) {
   Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
 }
 
-/** Fisher-Yates shuffle — avoids the biased Array#sort trick */
+/** Fisher-Yates — avoids the biased Array#sort trick */
 function shuffle(arr) {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -118,13 +120,11 @@ function progress(msg)   { process.stdout.write(`\r  ${msg}`.padEnd(80)); }
 function parseRuntimeMs(stdout, stderr) {
   const combined = [stdout, stderr].filter(Boolean).join('\n');
 
-  // TAP summary line:  ℹ duration_ms 123.45
   const summaryMatch = combined.match(
     /(?:^|\n)[^\S\r\n]*[iℹ]\s+duration_ms\s+([0-9.]+)\s*(?:\n|$)/
   );
   if (summaryMatch?.[1]) return Number(summaryMatch[1]);
 
-  // Diagnostic line inside a test block:  duration_ms: 123.45
   const diagnosticMatches = [...combined.matchAll(/duration_ms:\s*([0-9.]+)/g)];
   if (diagnosticMatches.length > 0) {
     return Number(diagnosticMatches[diagnosticMatches.length - 1][1]);
@@ -136,14 +136,16 @@ function parseRuntimeMs(stdout, stderr) {
 // ─── Test discovery ───────────────────────────────────────────────────────────
 
 /**
- * Enumerate test names in a file by running it with --test-reporter=json.
- * Falls back to a single entry (run the whole file as one unit) when discovery
- * fails or finds nothing — matching the extension's fallback behaviour.
+ * Returns the list of test names declared in a file.
+ * Falls back to a single entry (whole-file execution) when discovery finds nothing,
+ * matching the extension's fallback behaviour.
  */
 function discoverTests(testFilePath) {
   return new Promise((resolve) => {
     if (CONFIG.dryRun) {
-      resolve(['(dry-run-test-a)', '(dry-run-test-b)']);
+      // Return 2–5 fake test names so dry-run exercises the per-test loop
+      const n = 2 + Math.floor(Math.random() * 4);
+      resolve(Array.from({ length: n }, (_, i) => `dry-run-test-${i + 1}`));
       return;
     }
 
@@ -180,17 +182,12 @@ function discoverTests(testFilePath) {
 
 // ─── Single test measurement (mirrors executeSingleTestCase) ──────────────────
 
-/**
- * Runs one named test case in isolation and returns { energyJ, runtimeMs, passed }.
- * Uses the same default command template as the extension:
- *   node --test --test-name-pattern="<escaped>" <file>
- */
 function measureTestCase(testFilePath, testName) {
   return new Promise((resolve) => {
     if (CONFIG.dryRun) {
       resolve({
         energyJ  : Math.random() * 0.05 + 0.001,
-        runtimeMs: Math.random() * 300  + 10,
+        runtimeMs: Math.random() * 300 + 10,
         passed   : true,
       });
       return;
@@ -228,12 +225,11 @@ function measureTestCase(testFilePath, testName) {
 
       const runtimeMs = parseRuntimeMs(stdout, stderr) ?? 0;
       const runtimeS  = runtimeMs / 1000;
-
       const avgCpuFraction = cpuSamples.length > 0
         ? cpuSamples.reduce((s, v) => s + v, 0) / cpuSamples.length / 100
         : 0;
 
-      // Identical formula to testCommandRunner.ts
+      // Identical to testCommandRunner.ts
       const energyJ = (avgCpuFraction * TDP_W + IDLE_BASELINE_W) * runtimeS;
 
       resolve({ energyJ, runtimeMs, passed: code === 0 });
@@ -245,6 +241,76 @@ function measureTestCase(testFilePath, testName) {
       resolve({ energyJ: 0, runtimeMs: 0, passed: false, error: err.message });
     });
   });
+}
+
+// ─── Strategies ───────────────────────────────────────────────────────────────
+
+/**
+ * BASELINE: runs all tests in discovery order.
+ * This is the control condition — no reordering applied.
+ */
+async function runBaseline(testFilePath, testNames) {
+  const perTest = [];
+  let totalEnergyJ   = 0;
+  let totalRuntimeMs = 0;
+
+  for (const name of testNames) {
+    const m = await measureTestCase(testFilePath, name);
+    perTest.push({ testName: name, ...m });
+    totalEnergyJ   += m.energyJ;
+    totalRuntimeMs += m.runtimeMs;
+    sleep(CONFIG.cooldownMs);
+  }
+
+  return { perTest, totalEnergyJ, totalRuntimeMs };
+}
+
+/**
+ * EFFICIENT: sorts tests by their baseline energy ascending, then reruns.
+ * Stops on first failure, mirroring the extension's behaviour.
+ * Takes the baseline per-test results so the sort order is deterministic.
+ */
+async function runEfficient(testFilePath, baselinePerTest) {
+  const sorted = [...baselinePerTest].sort((a, b) => a.energyJ - b.energyJ);
+  const perTest = [];
+  let totalEnergyJ   = 0;
+  let totalRuntimeMs = 0;
+  let stoppedEarly   = false;
+
+  for (const { testName } of sorted) {
+    const m = await measureTestCase(testFilePath, testName);
+    perTest.push({ testName, ...m });
+    totalEnergyJ   += m.energyJ;
+    totalRuntimeMs += m.runtimeMs;
+
+    if (!m.passed) {
+      stoppedEarly = true;
+      break;
+    }
+    sleep(CONFIG.cooldownMs);
+  }
+
+  return { perTest, totalEnergyJ, totalRuntimeMs, stoppedEarly };
+}
+
+/**
+ * Runs both strategies for one file, always in the required order:
+ * baseline first (to profile individual test energies), then efficient
+ * (which uses those profiled energies to determine the execution order).
+ * This matches the extension's intended workflow exactly.
+ */
+async function measureFile(testFilePath) {
+  const testNames = await discoverTests(testFilePath);
+
+  const baselineResult  = await runBaseline(testFilePath, testNames);
+  sleep(CONFIG.cooldownMs);
+  const efficientResult = await runEfficient(testFilePath, baselineResult.perTest);
+
+  return {
+    testCount: testNames.length,
+    baselineResult,
+    efficientResult,
+  };
 }
 
 // ─── Dataset ──────────────────────────────────────────────────────────────────
@@ -265,64 +331,16 @@ function getAllTestFiles() {
   return files;
 }
 
-// ─── Strategy implementations ─────────────────────────────────────────────────
-
-/**
- * PROFILING: runs all discovered tests individually in file order.
- * Returns per-test measurements + totals for the file.
- */
-async function runProfiling(testFilePath) {
-  const testNames = await discoverTests(testFilePath);
-  const perTest   = [];
-  let totalEnergyJ   = 0;
-  let totalRuntimeMs = 0;
-
-  for (const name of testNames) {
-    const m = await measureTestCase(testFilePath, name);
-    perTest.push({ testName: name, ...m });
-    totalEnergyJ   += m.energyJ;
-    totalRuntimeMs += m.runtimeMs;
-    sleep(CONFIG.cooldownMs);
-  }
-
-  return { perTest, totalEnergyJ, totalRuntimeMs, testCount: testNames.length };
-}
-
-/**
- * EFFICIENT: reruns the same tests sorted by profiled energy ascending.
- * Stops on the first failure, mirroring the extension's behaviour.
- */
-async function runEfficient(testFilePath, profilingResult) {
-  const sorted = [...profilingResult.perTest].sort((a, b) => a.energyJ - b.energyJ);
-  const perTest = [];
-  let totalEnergyJ   = 0;
-  let totalRuntimeMs = 0;
-  let stoppedEarly   = false;
-
-  for (const { testName } of sorted) {
-    const m = await measureTestCase(testFilePath, testName);
-    perTest.push({ testName, ...m });
-    totalEnergyJ   += m.energyJ;
-    totalRuntimeMs += m.runtimeMs;
-
-    if (!m.passed) {
-      stoppedEarly = true;
-      break;
-    }
-    sleep(CONFIG.cooldownMs);
-  }
-
-  return { perTest, totalEnergyJ, totalRuntimeMs, stoppedEarly, testCount: sorted.length };
-}
-
 // ─── Warm-up ──────────────────────────────────────────────────────────────────
 
 async function warmUp(allFiles) {
   log('🔥', `Warming up (${CONFIG.warmupReps} discarded runs)...`);
-  const warmFile = allFiles[0];
   for (let i = 0; i < CONFIG.warmupReps; i++) {
-    progress(`warm-up ${i + 1}/${CONFIG.warmupReps}`);
-    await runProfiling(warmFile);
+    // Rotate through a few different files to warm up more broadly
+    const f = allFiles[i % allFiles.length];
+    progress(`warm-up ${i + 1}/${CONFIG.warmupReps}  →  ${path.basename(f)}`);
+    const names = await discoverTests(f);
+    await runBaseline(f, names);
     sleep(CONFIG.cooldownMs);
   }
   process.stdout.write('\n');
@@ -335,7 +353,7 @@ async function runExperiment(allFiles) {
   let skipped = 0;
 
   for (let run = 0; run < CONFIG.numRuns; run++) {
-    log('🔬', `Run ${run + 1} / ${CONFIG.numRuns}`);
+    log('🔬', `Run ${run + 1} / ${CONFIG.numRuns}  (${observations.length} pairs so far)`);
 
     const sample = shuffle(sampleWithReplacement(allFiles, CONFIG.sampleSize));
 
@@ -343,113 +361,152 @@ async function runExperiment(allFiles) {
       const filePath = sample[i];
       const label    = path.basename(filePath);
 
-      progress(`[${i + 1}/${sample.length}] profiling  → ${label}`);
-      let profilingResult;
+      progress(`[${i + 1}/${sample.length}] ${label}`);
+
+      let result;
       try {
-        profilingResult = await runProfiling(filePath);
+        result = await measureFile(filePath);
       } catch (e) {
-        console.error(`\n  ✗ profiling failed for ${label}: ${e.message}`);
+        console.error(`\n  ✗ failed for ${label}: ${e.message}`);
         skipped++;
         continue;
       }
 
-      progress(`[${i + 1}/${sample.length}] efficient → ${label}`);
-      let efficientResult;
-      try {
-        efficientResult = await runEfficient(filePath, profilingResult);
-      } catch (e) {
-        console.error(`\n  ✗ efficient run failed for ${label}: ${e.message}`);
-        skipped++;
-        continue;
-      }
+      const { baselineResult, efficientResult, testCount } = result;
 
       observations.push({
-        run       : run + 1,       // 1-indexed for human readability
-        file      : label,
-        file_path : filePath,
-        timestamp : new Date().toISOString(),
-        test_count: profilingResult.testCount,
+        // ── Bookkeeping ────────────────────────────────────────────────────
+        run            : run + 1,
+        file           : label,
+        file_path      : filePath,
+        timestamp      : new Date().toISOString(),
+        test_count     : testCount,
 
-        // ── Energy ──────────────────────────────────────────────────────
-        profiling_energy_j   : profilingResult.totalEnergyJ,
+        // ── The paired observation (what the statistical test consumes) ────
+        baseline_energy_j    : baselineResult.totalEnergyJ,
         efficient_energy_j   : efficientResult.totalEnergyJ,
-        // positive = efficient strategy used less energy
-        energy_delta_j       : profilingResult.totalEnergyJ - efficientResult.totalEnergyJ,
+        // positive = efficient used less energy (the effect we're looking for)
+        energy_saving_j      : baselineResult.totalEnergyJ - efficientResult.totalEnergyJ,
+        // as a percentage of baseline (normalises across files of different sizes)
+        energy_saving_pct    : baselineResult.totalEnergyJ > 0
+          ? (baselineResult.totalEnergyJ - efficientResult.totalEnergyJ)
+              / baselineResult.totalEnergyJ * 100
+          : null,
 
-        // ── Duration ────────────────────────────────────────────────────
-        profiling_duration_ms: profilingResult.totalRuntimeMs,
+        // ── Duration ──────────────────────────────────────────────────────
+        baseline_duration_ms : baselineResult.totalRuntimeMs,
         efficient_duration_ms: efficientResult.totalRuntimeMs,
-        duration_delta_ms    : profilingResult.totalRuntimeMs - efficientResult.totalRuntimeMs,
+        duration_saving_ms   : baselineResult.totalRuntimeMs - efficientResult.totalRuntimeMs,
 
-        // ── Flags ────────────────────────────────────────────────────────
+        // ── Flags ─────────────────────────────────────────────────────────
         efficient_stopped_early: efficientResult.stoppedEarly,
 
-        // ── Per-test breakdown (keep for post-hoc analysis) ─────────────
-        profiling_per_test: profilingResult.perTest,
+        // ── Per-test breakdown (keep for post-hoc analysis) ────────────────
+        baseline_per_test : baselineResult.perTest,
         efficient_per_test: efficientResult.perTest,
       });
     }
 
     process.stdout.write('\n');
+
+    // Write a checkpoint after every run so results are not lost if the
+    // experiment is interrupted overnight
+    writeCheckpoint(observations);
   }
 
-  log('📊', `Collected ${observations.length} observations (${skipped} files skipped due to errors)`);
+  log('📊', `Collected ${observations.length} paired observations (${skipped} files skipped)`);
   return observations;
+}
+
+// ─── Checkpoint ───────────────────────────────────────────────────────────────
+
+function writeCheckpoint(observations) {
+  const checkpointPath = path.join(CONFIG.outputDir, 'checkpoint-raw.json');
+  fs.writeFileSync(checkpointPath, JSON.stringify(observations, null, 2), 'utf-8');
 }
 
 // ─── Aggregation ──────────────────────────────────────────────────────────────
 
 function stats(values) {
-  if (values.length === 0) return { mean: null, stddev: null, min: null, max: null, n: 0 };
-  const mean   = values.reduce((s, v) => s + v, 0) / values.length;
-  const stddev = Math.sqrt(values.reduce((s, v) => s + (v - mean) ** 2, 0) / values.length);
-  return { mean, stddev, min: Math.min(...values), max: Math.max(...values), n: values.length };
+  const clean = values.filter(v => v != null && isFinite(v));
+  if (clean.length === 0) return { mean: null, stddev: null, median: null, min: null, max: null, n: 0 };
+  const mean   = clean.reduce((s, v) => s + v, 0) / clean.length;
+  const stddev = Math.sqrt(clean.reduce((s, v) => s + (v - mean) ** 2, 0) / clean.length);
+  const sorted = [...clean].sort((a, b) => a - b);
+  const median = sorted.length % 2 === 0
+    ? (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2
+    : sorted[Math.floor(sorted.length / 2)];
+  return { mean, stddev, median, min: sorted[0], max: sorted[sorted.length - 1], n: clean.length };
 }
 
+/**
+ * Per-file aggregation — collapses multiple runs of the same file.
+ * Useful for seeing which files benefit most from reordering.
+ */
 function aggregateByFile(observations) {
   const grouped = {};
   for (const o of observations) (grouped[o.file] ??= []).push(o);
 
-  return Object.entries(grouped).map(([file, entries]) => ({
-    file,
-    samples              : entries.length,
-    profiling_energy_j   : stats(entries.map(e => e.profiling_energy_j)),
-    efficient_energy_j   : stats(entries.map(e => e.efficient_energy_j)),
-    energy_delta_j       : stats(entries.map(e => e.energy_delta_j)),
-    profiling_duration_ms: stats(entries.map(e => e.profiling_duration_ms)),
-    efficient_duration_ms: stats(entries.map(e => e.efficient_duration_ms)),
-    duration_delta_ms    : stats(entries.map(e => e.duration_delta_ms)),
-  }));
+  return Object.entries(grouped)
+    .map(([file, entries]) => ({
+      file,
+      samples            : entries.length,
+      test_count         : entries[0].test_count,
+      baseline_energy_j  : stats(entries.map(e => e.baseline_energy_j)),
+      efficient_energy_j : stats(entries.map(e => e.efficient_energy_j)),
+      energy_saving_j    : stats(entries.map(e => e.energy_saving_j)),
+      energy_saving_pct  : stats(entries.map(e => e.energy_saving_pct)),
+      baseline_duration_ms : stats(entries.map(e => e.baseline_duration_ms)),
+      efficient_duration_ms: stats(entries.map(e => e.efficient_duration_ms)),
+    }))
+    .sort((a, b) => (b.energy_saving_j.mean ?? 0) - (a.energy_saving_j.mean ?? 0));
 }
 
+/**
+ * Overall experiment summary.
+ * The run_summaries array is particularly useful for checking stability —
+ * if mean_energy_saving_j is consistent across runs, your measurements are reliable.
+ */
 function aggregateOverall(observations) {
   const byRun = {};
   for (const o of observations) (byRun[o.run] ??= []).push(o);
 
   const runSummaries = Object.entries(byRun).map(([run, entries]) => ({
-    run                     : Number(run),
-    files_measured          : entries.length,
-    total_profiling_energy_j: entries.reduce((s, e) => s + e.profiling_energy_j, 0),
-    total_efficient_energy_j: entries.reduce((s, e) => s + e.efficient_energy_j, 0),
-    mean_energy_delta_j     : entries.reduce((s, e) => s + e.energy_delta_j, 0) / entries.length,
+    run                   : Number(run),
+    n                     : entries.length,
+    mean_baseline_energy_j : entries.reduce((s, e) => s + e.baseline_energy_j, 0) / entries.length,
+    mean_efficient_energy_j: entries.reduce((s, e) => s + e.efficient_energy_j, 0) / entries.length,
+    mean_energy_saving_j  : entries.reduce((s, e) => s + e.energy_saving_j, 0) / entries.length,
+    mean_energy_saving_pct: entries
+      .filter(e => e.energy_saving_pct != null)
+      .reduce((s, e) => s + e.energy_saving_pct, 0) / entries.filter(e => e.energy_saving_pct != null).length,
   }));
 
   return {
-    total_observations    : observations.length,
-    num_runs              : CONFIG.numRuns,
-    sample_size           : CONFIG.sampleSize,
-    cpu_model             : os.cpus()[0]?.model ?? 'unknown',
-    tdp_w                 : TDP_W,
-    idle_baseline_w       : IDLE_BASELINE_W,
-    profiling_energy_j    : stats(observations.map(o => o.profiling_energy_j)),
-    efficient_energy_j    : stats(observations.map(o => o.efficient_energy_j)),
-    energy_delta_j        : stats(observations.map(o => o.energy_delta_j)),
-    profiling_duration_ms : stats(observations.map(o => o.profiling_duration_ms)),
-    efficient_duration_ms : stats(observations.map(o => o.efficient_duration_ms)),
-    duration_delta_ms     : stats(observations.map(o => o.duration_delta_ms)),
-    run_summaries         : runSummaries,
-    config                : CONFIG,
-    generated_at          : new Date().toISOString(),
+    total_observations   : observations.length,
+    num_runs             : CONFIG.numRuns,
+    sample_size          : CONFIG.sampleSize,
+    cpu_model            : os.cpus()[0]?.model ?? 'unknown',
+    tdp_w                : TDP_W,
+    idle_baseline_w      : IDLE_BASELINE_W,
+
+    // These are what you report in your paper
+    baseline_energy_j    : stats(observations.map(o => o.baseline_energy_j)),
+    efficient_energy_j   : stats(observations.map(o => o.efficient_energy_j)),
+    energy_saving_j      : stats(observations.map(o => o.energy_saving_j)),
+    energy_saving_pct    : stats(observations.map(o => o.energy_saving_pct)),
+    baseline_duration_ms : stats(observations.map(o => o.baseline_duration_ms)),
+    efficient_duration_ms: stats(observations.map(o => o.efficient_duration_ms)),
+    duration_saving_ms   : stats(observations.map(o => o.duration_saving_ms)),
+
+    // For your statistical test: extract observations.map(o => o.energy_saving_j)
+    // and run a one-sample t-test or Wilcoxon signed-rank test against 0.
+    // If p < 0.05, energy-aware ordering has a statistically significant effect.
+    statistical_test_hint: 'Run a one-sample t-test (or Wilcoxon) on the energy_saving_j column of raw.json against H0=0',
+
+    run_summaries        : runSummaries,
+    config               : CONFIG,
+    generated_at         : new Date().toISOString(),
   };
 }
 
@@ -460,56 +517,69 @@ function writeJSON(filePath, data) {
   console.log(`  → ${filePath}`);
 }
 
-function writeTextSummary(filePath, overall, byFile) {
-  const f4  = (n) => (n == null ? 'N/A' : n.toFixed(4));
-  const f1  = (n) => (n == null ? 'N/A' : n.toFixed(1));
-  const pct = (a, b) => (!a || !b ? 'N/A' : (((a - b) / b) * 100).toFixed(1) + ' %');
-  const hr  = '─'.repeat(68);
-  const dhr = '═'.repeat(68);
+function writeTextSummary(filePath, overall) {
+  const f  = (n, d = 4) => (n == null ? 'N/A' : Number(n).toFixed(d));
+  const p  = (n) => (n == null ? 'N/A' : Number(n).toFixed(1) + ' %');
+  const hr = '─'.repeat(68);
+  const dhr= '═'.repeat(68);
 
-  const pe = overall.profiling_energy_j;
+  const es = overall.energy_saving_j;
+  const ep = overall.energy_saving_pct;
+  const be = overall.baseline_energy_j;
   const ee = overall.efficient_energy_j;
-  const pd = overall.profiling_duration_ms;
+  const bd = overall.baseline_duration_ms;
   const ed = overall.efficient_duration_ms;
 
   const lines = [
     dhr,
-    '  EXPERIMENT SUMMARY  —  Energy-Aware Test Prioritisation',
+    '  EXPERIMENT RESULTS  —  Energy-Aware Test Ordering',
     dhr,
     '',
-    `  CPU model       : ${overall.cpu_model}`,
-    `  TDP estimate    : ${overall.tdp_w} W   (idle baseline: ${overall.idle_baseline_w} W)`,
-    `  Runs            : ${overall.num_runs}`,
-    `  Sample / run    : ${overall.sample_size}`,
-    `  Observations    : ${overall.total_observations}`,
-    `  Generated at    : ${overall.generated_at}`,
+    `  Research question : Does energy-aware ordering save energy vs baseline?`,
+    '',
+    `  CPU               : ${overall.cpu_model}`,
+    `  TDP estimate      : ${overall.tdp_w} W  (idle baseline: ${overall.idle_baseline_w} W)`,
+    `  Runs              : ${overall.num_runs}`,
+    `  Sample / run      : ${overall.sample_size}`,
+    `  Total pairs       : ${overall.total_observations}`,
+    `  Generated at      : ${overall.generated_at}`,
     '',
     hr,
-    '  ENERGY  (Joules)',
+    '  ENERGY  (Joules per file)',
     hr,
-    `  Mean profiling energy   : ${f4(pe.mean)} J  ± ${f4(pe.stddev)}`,
-    `  Mean efficient energy   : ${f4(ee.mean)} J  ± ${f4(ee.stddev)}`,
-    `  Mean Δ (profiling−eff)  : ${f4(overall.energy_delta_j.mean)} J  ± ${f4(overall.energy_delta_j.stddev)}`,
-    `  Relative saving         : ${pct(pe.mean - ee.mean, pe.mean)}`,
+    `  Baseline  mean : ${f(be.mean)} J  ± ${f(be.stddev)}  (median ${f(be.median)})`,
+    `  Efficient mean : ${f(ee.mean)} J  ± ${f(ee.stddev)}  (median ${f(ee.median)})`,
+    '',
+    `  Mean saving    : ${f(es.mean)} J  ± ${f(es.stddev)}`,
+    `  Median saving  : ${f(es.median)} J`,
+    `  Mean saving %  : ${p(ep.mean)}`,
+    `  Min / Max      : ${f(es.min)} J  /  ${f(es.max)} J`,
+    '',
+    `  → Positive saving = efficient strategy used less energy`,
     '',
     hr,
-    '  DURATION  (milliseconds)',
+    '  DURATION  (milliseconds per file)',
     hr,
-    `  Mean profiling duration : ${f1(pd.mean)} ms  ± ${f1(pd.stddev)}`,
-    `  Mean efficient duration : ${f1(ed.mean)} ms  ± ${f1(ed.stddev)}`,
-    `  Mean Δ (profiling−eff)  : ${f1(overall.duration_delta_ms.mean)} ms`,
+    `  Baseline  mean : ${f(bd.mean, 1)} ms  ± ${f(bd.stddev, 1)}`,
+    `  Efficient mean : ${f(ed.mean, 1)} ms  ± ${f(ed.stddev, 1)}`,
+    `  Mean saving    : ${f(overall.duration_saving_ms.mean, 1)} ms`,
     '',
     hr,
-    '  TOP 10 FILES BY MEAN ENERGY SAVING',
+    '  NEXT STEP — STATISTICAL TEST',
     hr,
     '',
-    ...([...byFile]
-      .filter(t => t.energy_delta_j.mean != null)
-      .sort((a, b) => b.energy_delta_j.mean - a.energy_delta_j.mean)
-      .slice(0, 10)
-      .map(t =>
-        `  ${t.file.padEnd(52)} Δ = ${f4(t.energy_delta_j.mean)} J   (n=${t.samples})`
-      )),
+    '  Load raw.json and run a one-sample t-test (or Wilcoxon signed-rank)',
+    '  on the energy_saving_j column against H0 = 0.',
+    '',
+    '  Python (scipy):',
+    '    import json, numpy as np',
+    '    from scipy import stats',
+    '    data = json.load(open("raw.json"))',
+    '    savings = [r["energy_saving_j"] for r in data]',
+    '    print(stats.ttest_1samp(savings, 0))       # parametric',
+    '    print(stats.wilcoxon(savings))              # non-parametric',
+    '',
+    '  p < 0.05 → reject H0 → ordering has a statistically significant effect.',
     '',
     dhr,
     '',
@@ -527,10 +597,11 @@ async function main() {
   log('⚙️ ', 'Configuration');
   console.log(`  Dataset   : ${CONFIG.datasetDir}`);
   console.log(`  Output    : ${CONFIG.outputDir}`);
-  console.log(`  Runs      : ${CONFIG.numRuns}   Sample/run: ${CONFIG.sampleSize}`);
-  console.log(`  Cooldown  : ${CONFIG.cooldownMs} ms   Warm-up: ${CONFIG.warmupReps}`);
+  console.log(`  Runs      : ${CONFIG.numRuns}   Sample/run : ${CONFIG.sampleSize}`);
+  console.log(`  Total pairs planned : ${CONFIG.numRuns * CONFIG.sampleSize}`);
+  console.log(`  Cooldown  : ${CONFIG.cooldownMs} ms   Warm-up : ${CONFIG.warmupReps}`);
   console.log(`  CPU       : ${os.cpus()[0]?.model ?? 'unknown'}`);
-  console.log(`  TDP       : ${TDP_W} W   Idle baseline: ${IDLE_BASELINE_W} W`);
+  console.log(`  TDP       : ${TDP_W} W   Idle baseline : ${IDLE_BASELINE_W} W`);
 
   try { require.resolve('pidusage'); } catch {
     console.error('\n✗ pidusage not found.  Run:  npm install pidusage');
@@ -548,11 +619,12 @@ async function main() {
   const t0 = Date.now();
 
   const rawObservations = await runExperiment(allFiles);
+
   const elapsed = ((Date.now() - t0) / 60000).toFixed(1);
   log('⏱ ', `Finished in ${elapsed} minutes`);
 
   if (rawObservations.length === 0) {
-    log('❌', 'No observations collected — check that pidusage is installed and the dataset is valid.');
+    log('❌', 'No observations collected. Check pidusage is installed and dataset is valid.');
     process.exit(1);
   }
 
@@ -563,7 +635,7 @@ async function main() {
   writeJSON(path.join(CONFIG.outputDir, 'raw.json'),     rawObservations);
   writeJSON(path.join(CONFIG.outputDir, 'by-file.json'), byFile);
   writeJSON(path.join(CONFIG.outputDir, 'overall.json'), overall);
-  writeTextSummary(path.join(CONFIG.outputDir, 'summary.txt'), overall, byFile);
+  writeTextSummary(path.join(CONFIG.outputDir, 'summary.txt'), overall);
 
   log('🎉', `Done!  Results in: ${CONFIG.outputDir}\n`);
 }
