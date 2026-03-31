@@ -22,6 +22,7 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(DEFAULT_VIEW_ID, provider),
     vscode.commands.registerCommand("testCaseAnalysis.selectFiles", () => controller.selectFiles()),
+    vscode.commands.registerCommand("testCaseAnalysis.selectFolder", () => controller.selectFolder()),
     vscode.commands.registerCommand("testCaseAnalysis.profileTests", () => controller.profileSelectedTests()),
     vscode.commands.registerCommand("testCaseAnalysis.runTestsEfficiently", () => controller.runTestsEfficiently())
   );
