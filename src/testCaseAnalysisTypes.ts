@@ -24,6 +24,8 @@ export type TestRuntime = {
   profiledRuntimeMs: number;
   lastRunPassed: boolean;
   errorMessage?: string;
+  actual?: string;
+  expected?: string;
 };
 
 export type ProfiledTestRuntime = TestRuntime & TestProfileIdentity;

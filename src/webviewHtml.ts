@@ -64,6 +64,21 @@ export function getWebviewHtml(): string {
       word-break: break-word;
     }
 
+    .result-details {
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--vscode-descriptionForeground);
+    }
+
+    .result-label {
+      font-weight: 700;
+    }
+
+    .result-value {
+      display: block;
+      margin-top: 2px;
+    }
+
     .result-text {
       word-break: break-word;
     }
@@ -240,6 +255,36 @@ export function getWebviewHtml(): string {
         badge.textContent = value.lastRunPassed ? "✅ PASS" : "❌ FAIL";
 
         item.append(text, badge);
+
+        if (!value.lastRunPassed && (value.expected !== undefined || value.actual !== undefined)) {
+          const details = document.createElement("div");
+          details.className = "result-details";
+
+          const expectedText = value.expected !== undefined ? String(value.expected) : "(not reported)";
+          const actualText = value.actual !== undefined ? String(value.actual) : "(not reported)";
+
+          const expectedLine = document.createElement("div");
+          const expectedLabel = document.createElement("span");
+          expectedLabel.className = "result-label";
+          expectedLabel.textContent = "Expected:";
+          const expectedValue = document.createElement("span");
+          expectedValue.className = "result-value";
+          expectedValue.textContent = expectedText;
+          expectedLine.append(expectedLabel, expectedValue);
+
+          const actualLine = document.createElement("div");
+          const actualLabel = document.createElement("span");
+          actualLabel.className = "result-label";
+          actualLabel.textContent = "Actual:";
+          const actualValue = document.createElement("span");
+          actualValue.className = "result-value";
+          actualValue.textContent = actualText;
+          actualLine.append(actualLabel, actualValue);
+
+          details.append(expectedLine, actualLine);
+          item.append(details);
+        }
+
         return item;
       });
     }

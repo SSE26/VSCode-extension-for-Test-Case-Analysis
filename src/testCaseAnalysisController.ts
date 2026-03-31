@@ -410,7 +410,9 @@ export class TestCaseAnalysisController {
           profiledEnergyJ: test.profiledEnergyJ,
           runtimeMs: test.runtimeMs,
           profiledRuntimeMs: test.profiledRuntimeMs,
-          lastRunPassed: test.lastRunPassed
+          lastRunPassed: test.lastRunPassed,
+          actual: test.actual,
+          expected: test.expected
         })),
         efficientRunTests: [...this.state.efficientRunTests]
           .sort((a, b) => a.energyJ - b.energyJ)
@@ -421,7 +423,9 @@ export class TestCaseAnalysisController {
             profiledEnergyJ: test.profiledEnergyJ,
             runtimeMs: test.runtimeMs,
             profiledRuntimeMs: test.profiledRuntimeMs,
-            lastRunPassed: test.lastRunPassed
+            lastRunPassed: test.lastRunPassed,
+            actual: test.actual,
+            expected: test.expected
           })),
         isBusy: this.state.isBusy,
         status: this.state.status

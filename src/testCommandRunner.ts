@@ -78,6 +78,17 @@ export async function executeSingleTestCase(
       // Estimated energy = (avg_cpu_fraction × TDP + idle_baseline) × total_duration
       // The idle baseline ensures even sub-100ms tests produce a non-zero result
       const energyJ = (avgCpuFraction * tdpW + idleBaselineW) * runtimeS;
+      var actual: string | undefined = undefined;
+      var expected: string | undefined = undefined;
+      if (code !== 0) {
+        const regexFilter = /expected:\s*([\s\S]*?)\r?\n\s*actual:\s*(.*)/i;
+        const combinedOutput = [stdout, stderr].filter(Boolean).join("\n");
+        const outputMatch = combinedOutput.match(regexFilter);
+        if (outputMatch?.[1] !== undefined && outputMatch?.[2] !== undefined) {
+          expected = outputMatch[1].trim();
+          actual = outputMatch[2].trim();
+        }
+      }
 
       resolve({
         uri,
@@ -89,7 +100,9 @@ export async function executeSingleTestCase(
         lastRunPassed: code === 0,
         errorMessage: code !== 0
           ? [stderr?.trim(), stdout?.trim()].filter(Boolean).join("\n").trim()
-          : ""
+          : "",
+        actual,
+        expected
       });
     });
 
