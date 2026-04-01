@@ -1,0 +1,2482 @@
+[
+  {
+    "run": 1,
+    "timestamp": "2026-04-01T11:56:34.840Z",
+    "sampled_files": [
+      {
+        "file": "test-dgram-recv-error.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-repl-tab-complete-no-warn.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-https-client-get-url.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-child-process-double-pipe.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-stream-base-typechecking.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-stream-base-typechecking.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-head-response-has-no-body.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-fs-promises-file-handle-close-errors.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-https-server-close-idle.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http2-invalidargtypes-errors.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-async-hooks-promise.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-fs-utimes-y2K38.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-diagnostics-channel-gc-maintains-subcriptions.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-runner-filter-warning.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-stream-readable-emit-readable-short-stream.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-sigint-infinite-loop.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-signal-args.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-fs-open-flags.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-event-emitter-num-args.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-global-webcrypto.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-sqlite.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http2-compat-serverresponse-writehead.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-vm-basic.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-readline-async-iterators-destroy.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-process-exit-code.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-debugger-break.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-crypto-dh-modp2.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-stdin-child-proc.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-webcrypto-digest-turboshake.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-worker-esm-exit.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-dgram-async-dispose.mjs",
+        "test_count": 1
+      },
+      {
+        "file": "test-event-emitter-set-max-listeners-side-effects.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-console.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-repl-save-load.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-process-env-symbols.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-outgoing-writableFinished.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-catch-uncaughtexception.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-stream2-readable-wrap-destroy.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-net-server-call-listen-multiple-times.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-vm-cross-context.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-response-setheaders.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-zlib-flush-drain.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-cli-syntax-piped-good.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-tls-snicallback-error.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-promise-reject-callback-exception.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-worker-message-channel-sharedarraybuffer.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-process-uptime.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-runner-run.mjs",
+        "test_count": 1
+      },
+      {
+        "file": "test-diagnostics-channel-http2-client-stream-start.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-worker-memory.js",
+        "test_count": 1
+      }
+    ],
+    "warmup_iterations_discarded": 1,
+    "measured_iterations": [
+      {
+        "iteration": 1,
+        "baseline_energy_j": 99.87222665000003,
+        "efficient_energy_j": 99.44916310000005,
+        "energy_saving_j": 0.42306354999998064,
+        "energy_saving_pct": 0.4236048040488747,
+        "baseline_duration_ms": 28534.921899999994,
+        "efficient_duration_ms": 28414.046599999994,
+        "duration_saving_ms": 120.8752999999997
+      },
+      {
+        "iteration": 2,
+        "baseline_energy_j": 99.11356506227273,
+        "efficient_energy_j": 98.99131479999998,
+        "energy_saving_j": 0.12225026227274327,
+        "energy_saving_pct": 0.12334362324262459,
+        "baseline_duration_ms": 28249.4793,
+        "efficient_duration_ms": 28283.232799999998,
+        "duration_saving_ms": -33.753499999998894
+      },
+      {
+        "iteration": 3,
+        "baseline_energy_j": 98.29548995,
+        "efficient_energy_j": 98.72784565000003,
+        "energy_saving_j": -0.43235570000003065,
+        "energy_saving_pct": -0.4398530392594382,
+        "baseline_duration_ms": 28084.425699999993,
+        "efficient_duration_ms": 28207.955899999997,
+        "duration_saving_ms": -123.5302000000047
+      }
+    ],
+    "average": {
+      "baseline_energy_j": 99.09376055409092,
+      "efficient_energy_j": 99.05610785000003,
+      "energy_saving_j": 0.03765270409089775,
+      "energy_saving_pct": 0.035698462677353694,
+      "baseline_duration_ms": 28289.608966666663,
+      "efficient_duration_ms": 28301.745099999996,
+      "duration_saving_ms": -12.136133333334632
+    }
+  },
+  {
+    "run": 2,
+    "timestamp": "2026-04-01T12:06:51.290Z",
+    "sampled_files": [
+      {
+        "file": "test-require-extensions-same-filename-as-dir.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-dgram-send-queue-info.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-instanceof.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-node-run.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-debugger-unavailable-port.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-cluster-worker-death.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-string-decoder-end.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-zlib-write-after-flush.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-process-threadCpuUsage-worker-threads.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-util-convert-signal-to-exit-code.mjs",
+        "test_count": 1
+      },
+      {
+        "file": "test-worker-stack-overflow-stack-size.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-inspector-port-zero-cluster.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-socket-error-listeners.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-stream-await-drain-writers-in-synchronously-recursion-write.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-tls-getcertificate-x509.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-file-write-stream3.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-child-process-exec-maxbuf.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-repl.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-diagnostics-channel-process.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-tty-stdin-pipe.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-event-emitter-once.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-fs-realpath-on-substed-drive.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-worker-terminate-null-handler.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-fs-cp-sync-copy-directory-to-file-error.mjs",
+        "test_count": 1
+      },
+      {
+        "file": "test-module-builtin.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http2-compat-serverresponse-trailers.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-dns-resolvesrv.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-readable-single-end.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-repl-editor.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-openssl-ca-options.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-is-internal-thread.mjs",
+        "test_count": 1
+      },
+      {
+        "file": "test-async-hooks-http-parser-destroy.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-agent-keep-alive-timeout-buffer.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-buffer-zero-fill-reset.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-diagnostics-channel-http2-client-stream-finish.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-tls-server-failed-handshake-emits-clienterror.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-https-truncate.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-repl-null-thrown.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-head-response-has-no-body-end-implicit-headers.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-crypto-randomfillsync-regression.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-async-hooks-stack-overflow.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-zlib-create-raw.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-cli-eval.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-priority-queue.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-repl-permission-model.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-dgram-setTTL.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-heap-prof-exit.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-whatwg-url-custom-searchparams-has.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http2-multi-content-length.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-cluster-worker-death.js",
+        "test_count": 1
+      }
+    ],
+    "warmup_iterations_discarded": 1,
+    "measured_iterations": [
+      {
+        "iteration": 1,
+        "baseline_energy_j": 95.51274565,
+        "efficient_energy_j": 94.47323095,
+        "energy_saving_j": 1.039514699999998,
+        "energy_saving_pct": 1.0883518141225144,
+        "baseline_duration_ms": 27289.35590000001,
+        "efficient_duration_ms": 26992.3517,
+        "duration_saving_ms": 297.0042000000103
+      },
+      {
+        "iteration": 2,
+        "baseline_energy_j": 93.93206200000002,
+        "efficient_energy_j": 93.15698209999995,
+        "energy_saving_j": 0.7750799000000654,
+        "energy_saving_pct": 0.8251494574877588,
+        "baseline_duration_ms": 26837.732000000004,
+        "efficient_duration_ms": 26616.280600000013,
+        "duration_saving_ms": 221.45139999999083
+      },
+      {
+        "iteration": 3,
+        "baseline_energy_j": 93.76181114999994,
+        "efficient_energy_j": 93.7327972,
+        "energy_saving_j": 0.029013949999949773,
+        "energy_saving_pct": 0.030944314795213715,
+        "baseline_duration_ms": 26789.088900000002,
+        "efficient_duration_ms": 26780.7992,
+        "duration_saving_ms": 8.289700000001176
+      }
+    ],
+    "average": {
+      "baseline_energy_j": 94.40220626666667,
+      "efficient_energy_j": 93.78767008333331,
+      "energy_saving_j": 0.6145361833333377,
+      "energy_saving_pct": 0.6481485288018289,
+      "baseline_duration_ms": 26972.058933333337,
+      "efficient_duration_ms": 26796.477166666667,
+      "duration_saving_ms": 175.58176666666745
+    }
+  },
+  {
+    "run": 3,
+    "timestamp": "2026-04-01T12:14:19.570Z",
+    "sampled_files": [
+      {
+        "file": "test-stream-readable-dispose.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-process-initgroups.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-snapshot-typescript.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-dgram-connect-send-empty-buffer.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-stream-readable-readable-then-resume.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-fs-cp-sync-symlink-points-to-dest-error.mjs",
+        "test_count": 1
+      },
+      {
+        "file": "test-webstreams-finished.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http2-compat-serverresponse-end.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-child-process-spawnsync-shell.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-cluster-dgram-ipv6only.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-permission-fs-write-report.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-https-localaddress.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-runner-no-isolation.mjs",
+        "test_count": 1
+      },
+      {
+        "file": "test-promise-hook-on-resolve.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-async-wrap-promise-after-enabled.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-repl-user-error-handler.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-worker-process-cwd.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-cluster-dgram-reuseport.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http2-status-code-invalid.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-diagnostics-channel-http2-client-stream-close.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-aborted.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-zlib-no-stream.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-worker-execargv-invalid.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-net-throttle.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-heap-prof-loop-drained.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-repl-dynamic-import.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-runner-aliases.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-worker-http2-stream-terminate.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-vm-syntax-error-message.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-tls-sni-servername.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http2-zero-length-write.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-event-emitter-num-args.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-urlpattern-types.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-fs-watchfile.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-repl-preview-without-inspector.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-whatwg-webstreams-adapters-to-streamwritable.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-sqlite.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-path-dirname.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-internal-util-construct-sab.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-whatwg-webstreams-encoding.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-vm-ownpropertynames.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-fs-readv-sync.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-server-destroy-socket-on-client-error.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-tls-destroy-whilst-write.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-repl-unexpected-token-recoverable.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-tls-client-abort.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-stream-readable-reading-readingMore.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-disable-sigusr1.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-fs-glob-throw.mjs",
+        "test_count": 1
+      },
+      {
+        "file": "test-http2-unbound-socket-proxy.js",
+        "test_count": 1
+      }
+    ],
+    "warmup_iterations_discarded": 1,
+    "measured_iterations": [
+      {
+        "iteration": 1,
+        "baseline_energy_j": 24.165320550000004,
+        "efficient_energy_j": 23.857517249999997,
+        "energy_saving_j": 0.3078033000000069,
+        "energy_saving_pct": 1.2737397766486769,
+        "baseline_duration_ms": 6904.3773,
+        "efficient_duration_ms": 6816.433500000001,
+        "duration_saving_ms": 87.9437999999991
+      },
+      {
+        "iteration": 2,
+        "baseline_energy_j": 24.292530499999998,
+        "efficient_energy_j": 24.292333100000004,
+        "energy_saving_j": 0.00019739999999401903,
+        "energy_saving_pct": 0.0008125954601313314,
+        "baseline_duration_ms": 6940.723000000001,
+        "efficient_duration_ms": 6940.6666000000005,
+        "duration_saving_ms": 0.05640000000039436
+      },
+      {
+        "iteration": 3,
+        "baseline_energy_j": 24.234826699999996,
+        "efficient_energy_j": 24.074032499999998,
+        "energy_saving_j": 0.160794199999998,
+        "energy_saving_pct": 0.663484009976428,
+        "baseline_duration_ms": 6924.236200000002,
+        "efficient_duration_ms": 6878.294999999998,
+        "duration_saving_ms": 45.941200000003846
+      }
+    ],
+    "average": {
+      "baseline_energy_j": 24.230892583333333,
+      "efficient_energy_j": 24.074627616666664,
+      "energy_saving_j": 0.1562649666666663,
+      "energy_saving_pct": 0.6460121273617454,
+      "baseline_duration_ms": 6923.112166666669,
+      "efficient_duration_ms": 6878.465033333334,
+      "duration_saving_ms": 44.647133333334445
+    }
+  },
+  {
+    "run": 4,
+    "timestamp": "2026-04-01T12:22:01.489Z",
+    "sampled_files": [
+      {
+        "file": "test-fs-readlink-type-check.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-inspector-async-context-brk.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-performanceobserver-gc.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http2-compat-write-head-after-close.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-upgrade-server-with-large-body.mjs",
+        "test_count": 1
+      },
+      {
+        "file": "test-dgram-unref.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-net-server-pause-on-connect.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-outgoing-message-inheritance.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-stream-writable-write-cb-error.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-fs-stream-options.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-tls-js-stream.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-readable-large-hwm.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http2-respond-file-error-dir.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-sys.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-fs-cp-async-with-mode-flags.mjs",
+        "test_count": 1
+      },
+      {
+        "file": "test-assert-async.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-stream-transform-final-sync.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-tls-ca-concat.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http2-propagate-session-destroy-code.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-cluster-send-handle-twice.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http2-byteswritten-server.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-agent-keepalive.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-keepalive-client.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-crypto-keygen-bit-length.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-process-abort.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-crypto-padding-aes256.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http2-server-close-callback.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-require-extensions-main.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-inspector-async-stack-traces-set-interval.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-timeout-client-warning.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-v8-flag-pool-size-0.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-response-setheaders.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-cluster-worker-kill.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-inspector-exception.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-stream-readable-strategy-option.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-max-headers-count.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-readline-async-iterators.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-net-large-string.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-cppheap-stats.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-crypto-keygen-empty-passphrase-no-error.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-stream-iter-pipeto-writev.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-crypto-dep0203.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-crypto-keygen-key-object-without-encoding.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-whatwg-encoding-custom-textdecoder-fatal.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-fs-write-stream-close-without-callback.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-internal-assert.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-child-process-windows-hide.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-dns-resolveany.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-file-read-noexist.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-runner-coverage-default-exclusion.mjs",
+        "test_count": 1
+      }
+    ],
+    "warmup_iterations_discarded": 1,
+    "measured_iterations": [
+      {
+        "iteration": 1,
+        "baseline_energy_j": 23.693912549999993,
+        "efficient_energy_j": 23.53424604999999,
+        "energy_saving_j": 0.1596665000000037,
+        "energy_saving_pct": 0.6738713990906654,
+        "baseline_duration_ms": 6769.689299999999,
+        "efficient_duration_ms": 6724.0703,
+        "duration_saving_ms": 45.61899999999878
+      },
+      {
+        "iteration": 2,
+        "baseline_energy_j": 23.48800545,
+        "efficient_energy_j": 23.835590449999994,
+        "energy_saving_j": -0.34758499999999515,
+        "energy_saving_pct": -1.4798404263823737,
+        "baseline_duration_ms": 6710.8587,
+        "efficient_duration_ms": 6810.1687,
+        "duration_saving_ms": -99.3100000000004
+      },
+      {
+        "iteration": 3,
+        "baseline_energy_j": 24.082382799999998,
+        "efficient_energy_j": 24.92218855000001,
+        "energy_saving_j": -0.8398057500000107,
+        "energy_saving_pct": -3.487220334359982,
+        "baseline_duration_ms": 6880.680800000002,
+        "efficient_duration_ms": 7120.6253,
+        "duration_saving_ms": -239.9444999999978
+      }
+    ],
+    "average": {
+      "baseline_energy_j": 23.754766933333332,
+      "efficient_energy_j": 24.09734168333333,
+      "energy_saving_j": -0.3425747500000007,
+      "energy_saving_pct": -1.4310631205505635,
+      "baseline_duration_ms": 6787.076266666667,
+      "efficient_duration_ms": 6884.954766666667,
+      "duration_saving_ms": -97.8784999999998
+    }
+  },
+  {
+    "run": 5,
+    "timestamp": "2026-04-01T12:30:11.872Z",
+    "sampled_files": [
+      {
+        "file": "test-listen-fd-detached-inherit.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-file.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-child-process-send-keep-open.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-vm-context-property-forwarding.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-whatwg-url-custom-searchparams-entries.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-server-timeouts-validation.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-stream-readable-constructor-set-methods.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-timers-unrefed-in-beforeexit.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-fs-watch-ignore-glob.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-runner-mock-timers.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-agent-getname.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-dgram-close-during-bind.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-zlib-zstd-flush.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-vm-global-non-writable-properties.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-allow-req-after-204-res.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-timers-linked-list.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-diagnostics-channel-sync-unsubscribe.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-inspector-waiting-for-disconnect.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-event-emitter-error-monitor.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-child-process-fork.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-tls-buffersize.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-diagnostics-channel-http-server-start.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-v8-stats.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-trace-events-http.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-config-json-schema.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-fs-write-sync.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-fs-read-stream-fd.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-console-count.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-worker-unsupported-things.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-cluster-worker-wait-server-close.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-fs-readfile-unlink.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-trace-events-vm.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http2-create-client-connect.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-v8-collect-gc-profile-exit-before-stop.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-timers-this.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-server-reject-cr-no-lf.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-tls-delayed-attach.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-request-join-authorization-headers.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-https-server-connections-checking-leak.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-zlib-zstd.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-diagnostics-channel-gc-race-condition.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-worker-messaging.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-fs-write-stream-encoding.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-async-hooks-run-in-async-scope-caught-exception.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-cluster-setup-primary-argv.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-net-dns-lookup-skip.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-snapshot-eval.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-tls-set-default-ca-certificates-precedence-bundled.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http2-methods.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-eslint-alphabetize-errors.js",
+        "test_count": 1
+      }
+    ],
+    "warmup_iterations_discarded": 1,
+    "measured_iterations": [
+      {
+        "iteration": 1,
+        "baseline_energy_j": 38.99794500000001,
+        "efficient_energy_j": 38.84110510000002,
+        "energy_saving_j": 0.15683989999998715,
+        "energy_saving_pct": 0.402174781260877,
+        "baseline_duration_ms": 11142.269999999999,
+        "efficient_duration_ms": 11097.458600000004,
+        "duration_saving_ms": 44.81139999999505
+      },
+      {
+        "iteration": 2,
+        "baseline_energy_j": 38.49321035000001,
+        "efficient_energy_j": 38.93266299999999,
+        "energy_saving_j": -0.43945264999997846,
+        "energy_saving_pct": -1.1416367873821112,
+        "baseline_duration_ms": 10998.0601,
+        "efficient_duration_ms": 11123.617999999999,
+        "duration_saving_ms": -125.55789999999797
+      },
+      {
+        "iteration": 3,
+        "baseline_energy_j": 38.6645805,
+        "efficient_energy_j": 39.03482135,
+        "energy_saving_j": -0.37024085000000184,
+        "energy_saving_pct": -0.9575711030926659,
+        "baseline_duration_ms": 11047.023,
+        "efficient_duration_ms": 11152.806100000005,
+        "duration_saving_ms": -105.78310000000602
+      }
+    ],
+    "average": {
+      "baseline_energy_j": 38.71857861666667,
+      "efficient_energy_j": 38.93619648333334,
+      "energy_saving_j": -0.21761786666666438,
+      "energy_saving_pct": -0.5656777030712999,
+      "baseline_duration_ms": 11062.451033333333,
+      "efficient_duration_ms": 11124.627566666668,
+      "duration_saving_ms": -62.176533333336316
+    }
+  },
+  {
+    "run": 6,
+    "timestamp": "2026-04-01T12:37:43.891Z",
+    "sampled_files": [
+      {
+        "file": "test-http-content-length-mismatch.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-worker-track-unmanaged-fds.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-net-blocklist.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-vm-module-link-shared-deps.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-stream-big-push.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-stream-transform-split-highwatermark.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-async-hooks-stack-overflow.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-whatwg-webstreams-adapters-to-writablestream.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-webcrypto-derivebits.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-fs-read-type.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-stream-iter-pipeto-edge.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-kill-segfault-freebsd.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-sqlite-limits.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-async-hooks-recursive-stack-runInAsyncScope.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http2-server-stream-session-destroy.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http2-client-write-empty-string.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-stdin-pause-resume.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-https-agent-keylog.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-https-max-header-size-per-stream.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-client-reject-cr-no-lf.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-timers-immediate-unref-nested-once.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-global-domexception.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-console-not-call-toString.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-async-hooks-enable-disable-enable.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-net-perf_hooks.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-tls-sni-servername.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-permission-fs-repeat-path.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-fs-write-stream-patch-open.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-domain-uncaught-exception.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-temporal.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-parser-memory-retention.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-fs-readlink-type-check.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-perf-hooks-timerify-basic.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-internal-util-normalizeencoding.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-whatwg-encoding-custom-api-basics.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-fs-write-file-invalid-path.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-client-headers-host-array.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-async-hooks-enable-recursive.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-vm-indexed-properties.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-repl-unexpected-token-recoverable.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-events-getmaxlisteners.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http2-misc-util.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-tls-over-http-tunnel.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-process-getactiveresources-track-timer-lifetime.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-agent-timeout-option.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-stream-readable-data.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-vm-options-validation.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-child-process-advanced-serialization-largebuffer.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-timers-next-tick.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-diagnostics-channel-tracing-channel-sync-run-stores.js",
+        "test_count": 1
+      }
+    ],
+    "warmup_iterations_discarded": 1,
+    "measured_iterations": [
+      {
+        "iteration": 1,
+        "baseline_energy_j": 22.292185300000003,
+        "efficient_energy_j": 22.109584700000006,
+        "energy_saving_j": 0.18260059999999712,
+        "energy_saving_pct": 0.8191238209382599,
+        "baseline_duration_ms": 6369.1958,
+        "efficient_duration_ms": 6317.024200000001,
+        "duration_saving_ms": 52.17159999999967
+      },
+      {
+        "iteration": 2,
+        "baseline_energy_j": 22.058517600000005,
+        "efficient_energy_j": 22.015187250000004,
+        "energy_saving_j": 0.043330350000001516,
+        "energy_saving_pct": 0.1964336442989329,
+        "baseline_duration_ms": 6302.433599999998,
+        "efficient_duration_ms": 6290.053500000001,
+        "duration_saving_ms": 12.380099999996673
+      },
+      {
+        "iteration": 3,
+        "baseline_energy_j": 22.368322199999994,
+        "efficient_energy_j": 22.744276449999994,
+        "energy_saving_j": -0.3759542499999995,
+        "energy_saving_pct": -1.6807440747612246,
+        "baseline_duration_ms": 6390.949200000001,
+        "efficient_duration_ms": 6498.3647,
+        "duration_saving_ms": -107.41549999999916
+      }
+    ],
+    "average": {
+      "baseline_energy_j": 22.239675033333338,
+      "efficient_energy_j": 22.289682799999998,
+      "energy_saving_j": -0.05000776666666695,
+      "energy_saving_pct": -0.2217288698413439,
+      "baseline_duration_ms": 6354.192866666667,
+      "efficient_duration_ms": 6368.4808,
+      "duration_saving_ms": -14.287933333334271
+    }
+  },
+  {
+    "run": 7,
+    "timestamp": "2026-04-01T12:46:18.008Z",
+    "sampled_files": [
+      {
+        "file": "test-tls-set-default-ca-certificates-precedence-bundled.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-inspector-overwrite-config.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-module-isBuiltin.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-https-truncate.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-header-overflow.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-permission-fs-read.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-cli-bad-options.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-cluster-disconnect-race.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-process-execve-abort.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-tls-sni-option.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-stream-iter-consumers-tap.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-whatwg-webstreams-adapters-to-streamreadable.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-v8-stop-coverage.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http2-client-priority-before-connect.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-cli-permission-deny-fs.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-warn-tls-common-deprecation.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-set-process-debug-port.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http2-compat-client-upload-reject.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-diagnostics-channel-http2-server-stream-close.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-repl-pretty-stack-custom-writer.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-tls-reinitialize-listeners.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-server-request-timeout-interrupted-headers.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-server-delete-parser.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-agent-maxsockets.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-net-connect-reset-until-connected.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-fs-watch-recursive-update-file.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-crypto-ecb.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-fs-stat-date.mjs",
+        "test_count": 1
+      },
+      {
+        "file": "test-diagnostics-channel-http2-client-stream-body-single-buffer.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-fs-promises-file-handle-op-errors.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-cluster-fork-stdio.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-vm-create-context-arg.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-shadow-realm-gc-module.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-crypto-gcm-implicit-short-tag.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-performance-resourcetimingbufferfull.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-startup-large-pages.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-process-env-allowed-flags.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-crypto-dh-generate-keys.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-permission-fs-wildcard.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-stdout-stderr-reading.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-async-local-storage-contexts.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-abortsignal-cloneable.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-crypto-random.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http2-server-shutdown-options-errors.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-https-pfx.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-tls-client-reject-12.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http2-client-unescaped-path.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-response-status-message.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-runner-no-isolation-filtering.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-crypto-scrypt.js",
+        "test_count": 1
+      }
+    ],
+    "warmup_iterations_discarded": 1,
+    "measured_iterations": [
+      {
+        "iteration": 1,
+        "baseline_energy_j": 55.87781325000001,
+        "efficient_energy_j": 54.85427325,
+        "energy_saving_j": 1.0235400000000112,
+        "energy_saving_pct": 1.8317466995722331,
+        "baseline_duration_ms": 15965.089499999995,
+        "efficient_duration_ms": 15672.6495,
+        "duration_saving_ms": 292.43999999999505
+      },
+      {
+        "iteration": 2,
+        "baseline_energy_j": 64.45055995,
+        "efficient_energy_j": 53.07771280000001,
+        "energy_saving_j": 11.372847149999991,
+        "energy_saving_pct": 17.645846923320626,
+        "baseline_duration_ms": 18414.4457,
+        "efficient_duration_ms": 15165.060800000003,
+        "duration_saving_ms": 3249.3848999999973
+      },
+      {
+        "iteration": 3,
+        "baseline_energy_j": 58.88003310000001,
+        "efficient_energy_j": 49.758478699999976,
+        "energy_saving_j": 9.121554400000036,
+        "energy_saving_pct": 15.491761671581047,
+        "baseline_duration_ms": 16822.8666,
+        "efficient_duration_ms": 14216.7082,
+        "duration_saving_ms": 2606.158400000002
+      }
+    ],
+    "average": {
+      "baseline_energy_j": 59.736135433333345,
+      "efficient_energy_j": 52.56348825,
+      "energy_saving_j": 7.172647183333346,
+      "energy_saving_pct": 11.656451764824636,
+      "baseline_duration_ms": 17067.467266666667,
+      "efficient_duration_ms": 15018.1395,
+      "duration_saving_ms": 2049.327766666665
+    }
+  },
+  {
+    "run": 8,
+    "timestamp": "2026-04-01T12:54:05.979Z",
+    "sampled_files": [
+      {
+        "file": "test-net-connect-buffer.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-addrequest-localaddress.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-request-end.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-fs-read-file-sync-hostname.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-zlib-brotli.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-util-getcallsites.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-diagnostics-channel-net.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http2-raw-headers-defaults.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-buffer-from.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-fs-cp-async-dir-exists-error-on-exist.mjs",
+        "test_count": 1
+      },
+      {
+        "file": "test-stream-pipe-cleanup-pause.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-outgoing-message-capture-rejection.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-https-server-request-timeout.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-fs-promises-writefile-with-fd.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-stream2-readable-empty-buffer-no-eof.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-dgram-close-in-listening.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http2-client-rststream-before-connect.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-fs-long-path.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-status-code.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-process-exit-recursive.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-process-exit-recursive.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-module-multi-extensions.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-zlib-create-raw.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-v8-startup-snapshot-api.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-tty-stdin-pipe.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-dgram-send-callback-buffer-empty-address.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-webcrypto-supports.mjs",
+        "test_count": 1
+      },
+      {
+        "file": "test-http2-max-settings.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-dgram-connect-send-callback-buffer.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-promise-unhandled-flag.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-fs-cp-async-file-to-file.mjs",
+        "test_count": 1
+      },
+      {
+        "file": "test-vm-module-reevaluate.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-net-client-bind-twice.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-child-process-fork-args.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-whatwg-encoding-custom-textdecoder-utf16-surrogates.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-dgram-custom-lookup.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-fs-cp-async-file-to-file.mjs",
+        "test_count": 1
+      },
+      {
+        "file": "test-require-extension-over-directory.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-client-abort-unix-socket.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-vm-module-after-evaluate.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-outgoing-settimeout.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-stream-readable-default-encoding.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-https-localaddress-bind-error.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-net-localerror.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-fs-watch-ignore-glob.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-dump-req-when-res-ends.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-tls-finished.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-stream-consumers.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-zlib-destroy-pipe.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-net-socket-no-halfopen-enforcer.js",
+        "test_count": 1
+      }
+    ],
+    "warmup_iterations_discarded": 1,
+    "measured_iterations": [
+      {
+        "iteration": 1,
+        "baseline_energy_j": 32.65526775,
+        "efficient_energy_j": 33.017779899999994,
+        "energy_saving_j": -0.3625121499999935,
+        "energy_saving_pct": -1.1101184432946303,
+        "baseline_duration_ms": 9330.076500000001,
+        "efficient_duration_ms": 9433.651399999999,
+        "duration_saving_ms": -103.5748999999978
+      },
+      {
+        "iteration": 2,
+        "baseline_energy_j": 32.58058125,
+        "efficient_energy_j": 32.812978099999995,
+        "energy_saving_j": -0.23239684999999355,
+        "energy_saving_pct": -0.7132986616068845,
+        "baseline_duration_ms": 9308.737500000003,
+        "efficient_duration_ms": 9375.136600000002,
+        "duration_saving_ms": -66.39909999999873
+      },
+      {
+        "iteration": 3,
+        "baseline_energy_j": 32.440008299999995,
+        "efficient_energy_j": 32.8807843,
+        "energy_saving_j": -0.4407760000000067,
+        "energy_saving_pct": -1.3587419458212864,
+        "baseline_duration_ms": 9268.573800000002,
+        "efficient_duration_ms": 9394.5098,
+        "duration_saving_ms": -125.93599999999788
+      }
+    ],
+    "average": {
+      "baseline_energy_j": 32.558619099999994,
+      "efficient_energy_j": 32.90384743333333,
+      "energy_saving_j": -0.34522833333333125,
+      "energy_saving_pct": -1.060719683574267,
+      "baseline_duration_ms": 9302.462600000003,
+      "efficient_duration_ms": 9401.099266666666,
+      "duration_saving_ms": -98.6366666666648
+    }
+  },
+  {
+    "run": 9,
+    "timestamp": "2026-04-01T13:02:29.945Z",
+    "sampled_files": [
+      {
+        "file": "test-buffer-tostring-4gb.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-vm-not-strict.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-worker-safe-getters.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-sqlite-authz.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-snapshot-weak-reference.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-esm-loader-hooks-inspect-brk.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-event-emitter-listeners-side-effects.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-esm-loader-hooks-inspect-wait.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-permission-net-allowed.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-tls-set-default-ca-certificates-precedence-empty.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-tls-connect-memleak.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-process-execve-no-args.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-common-must-not-mutate-object-deep.mjs",
+        "test_count": 1
+      },
+      {
+        "file": "test-repl-require-self-referential.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-socket-encoding-error.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-request-arguments.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-net-server-blocklist.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-whatwg-url-custom-searchparams-sort.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-whatwg-webstreams-adapters-to-readablewritablepair.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-repl-async-iife.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-tls-reuse-host-from-socket.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-zlib-invalid-input.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-client-timeout-event.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-fastutf8stream-end.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-fs-promises-file-handle-pullsync.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-net-socket-destroy-send.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-internal-util-objects.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-stream-readable-reading-readingMore.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-v8-take-coverage-noop.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-net-isip.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-tls-request-timeout.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-cluster-rr-handle-keep-loop-alive.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-dns-resolvesrv-econnrefused.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-net-server-listen-options-signal.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-set-trailers.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-inspector-module.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-crypto-getcipherinfo.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-sqlite-aggregate-function.mjs",
+        "test_count": 1
+      },
+      {
+        "file": "test-net-write-after-end-nt.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-cli-options-precedence.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-fs-watch-encoding.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-child-process-spawnsync-args.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-dgram-createSocket-type.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-eval.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-worker-debug.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-diagnostics-channel-child-process.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-worker-workerdata-messageport.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-client-timeout-event.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-async-hooks-stack-overflow-nested-async.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http2-createserver-options.js",
+        "test_count": 1
+      }
+    ],
+    "warmup_iterations_discarded": 1,
+    "measured_iterations": [
+      {
+        "iteration": 1,
+        "baseline_energy_j": 47.168161250000004,
+        "efficient_energy_j": 47.62926420000001,
+        "energy_saving_j": -0.46110295000000434,
+        "energy_saving_pct": -0.9775724509507021,
+        "baseline_duration_ms": 13476.617500000002,
+        "efficient_duration_ms": 13608.361200000005,
+        "duration_saving_ms": -131.74370000000272
+      },
+      {
+        "iteration": 2,
+        "baseline_energy_j": 47.19341375,
+        "efficient_energy_j": 47.28263154999999,
+        "energy_saving_j": -0.08921779999999302,
+        "energy_saving_pct": -0.18904714219787294,
+        "baseline_duration_ms": 13483.832499999997,
+        "efficient_duration_ms": 13509.323300000002,
+        "duration_saving_ms": -25.490800000005038
+      },
+      {
+        "iteration": 3,
+        "baseline_energy_j": 47.54643915,
+        "efficient_energy_j": 47.651829049999996,
+        "energy_saving_j": -0.1053898999999987,
+        "energy_saving_pct": -0.22165676732912334,
+        "baseline_duration_ms": 13584.696899999995,
+        "efficient_duration_ms": 13614.808300000002,
+        "duration_saving_ms": -30.111400000007052
+      }
+    ],
+    "average": {
+      "baseline_energy_j": 47.302671383333326,
+      "efficient_energy_j": 47.521241599999996,
+      "energy_saving_j": -0.21857021666666535,
+      "energy_saving_pct": -0.4627587868258995,
+      "baseline_duration_ms": 13515.048966666664,
+      "efficient_duration_ms": 13577.497600000002,
+      "duration_saving_ms": -62.44863333333827
+    }
+  },
+  {
+    "run": 10,
+    "timestamp": "2026-04-01T13:12:14.179Z",
+    "sampled_files": [
+      {
+        "file": "test-testpy-env-var-via-comment.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-path-basename.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-full-response.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-timers-linked-list.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-worker-messaging-errors-invalid.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-net-can-reset-timeout.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-tls-js-stream.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-fs-cp-promises-invalid-mode.mjs",
+        "test_count": 1
+      },
+      {
+        "file": "test-vm-attributes-property-not-on-sandbox.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-vm-set-proto-null-on-globalthis.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-header-obstext.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-domain-multiple-errors.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-client-abort3.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-domain-timer.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-worker-message-channel-sharedarraybuffer.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http2-cancel-while-client-reading.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-tls-set-default-ca-certificates-mixed-types.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-server-keep-alive-defaults.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-stream-writableState-uncorked-bufferedRequestCount.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-snapshot-argv1.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-net-connect-reset.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-timers-to-primitive.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-crypto-hash-stream-pipe.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-trace-events-api-worker-disabled.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-fs-promises-file-handle-pullsync.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-punycode.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-stringbytes-external.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-debugger-list.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-https-agent-abort-controller.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-path-join.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-inspector-network-http2.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-stream2-httpclient-response-end.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-quic-handshake-ipv6-only.mjs",
+        "test_count": 1
+      },
+      {
+        "file": "test-esm-loader-hooks-inspect-brk.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-fs-promises-file-handle-readFile.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-snapshot-eval.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http2-date-header.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http2-misused-pseudoheaders.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-stream-writableState-uncorked-bufferedRequestCount.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-net-reuseport.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-vm-dynamic-import-callback-missing-flag.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-net-socket-write-after-close.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-performance-gc.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-keep-alive-timeout-buffer.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-eslint-prefer-common-mustnotcall.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-vm-access-process-env.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-http-client-set-timeout-after-end.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-stream2-readable-non-empty-end.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-tty-stdin-end.js",
+        "test_count": 1
+      },
+      {
+        "file": "test-stream2-large-read-stall.js",
+        "test_count": 1
+      }
+    ],
+    "warmup_iterations_discarded": 1,
+    "measured_iterations": [
+      {
+        "iteration": 1,
+        "baseline_energy_j": 76.40956049999997,
+        "efficient_energy_j": 76.3694239,
+        "energy_saving_j": 0.040136599999968325,
+        "energy_saving_pct": 0.05252824350425147,
+        "baseline_duration_ms": 21831.302999999996,
+        "efficient_duration_ms": 21819.8354,
+        "duration_saving_ms": 11.46759999999631
+      },
+      {
+        "iteration": 2,
+        "baseline_energy_j": 76.66451940000002,
+        "efficient_energy_j": 76.43980259999996,
+        "energy_saving_j": 0.22471680000005279,
+        "energy_saving_pct": 0.29311707913746177,
+        "baseline_duration_ms": 21904.1484,
+        "efficient_duration_ms": 21839.943599999995,
+        "duration_saving_ms": 64.20480000000316
+      },
+      {
+        "iteration": 3,
+        "baseline_energy_j": 76.60203565,
+        "efficient_energy_j": 76.5188396,
+        "energy_saving_j": 0.08319604999999797,
+        "energy_saving_pct": 0.10860814506304568,
+        "baseline_duration_ms": 21886.2959,
+        "efficient_duration_ms": 21862.525599999997,
+        "duration_saving_ms": 23.770300000003772
+      }
+    ],
+    "average": {
+      "baseline_energy_j": 76.55870518333333,
+      "efficient_energy_j": 76.44268869999999,
+      "energy_saving_j": 0.11601648333333969,
+      "energy_saving_pct": 0.15141782256825295,
+      "baseline_duration_ms": 21873.91576666666,
+      "efficient_duration_ms": 21840.768199999995,
+      "duration_saving_ms": 33.14756666666775
+    }
+  }
+]

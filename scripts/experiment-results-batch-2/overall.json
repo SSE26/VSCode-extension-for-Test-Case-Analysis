@@ -1,0 +1,179 @@
+{
+  "total_run_observations": 10,
+  "measured_iterations_per_run": 3,
+  "warmup_iterations_discarded": 1,
+  "num_runs": 10,
+  "sample_size": 50,
+  "cpu_model": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+  "tdp_w": 35,
+  "idle_baseline_w": 3.5,
+  "baseline_energy_j": {
+    "mean": 51.85960110874244,
+    "stddev": 27.766115777812512,
+    "median": 43.010625,
+    "min": 22.239675033333338,
+    "max": 99.09376055409092,
+    "n": 10
+  },
+  "efficient_energy_j": {
+    "mean": 51.167289249999996,
+    "stddev": 27.473238121728272,
+    "median": 43.228719041666665,
+    "min": 22.289682799999998,
+    "max": 99.05610785000003,
+    "n": 10
+  },
+  "energy_saving_j": {
+    "mean": 0.692311858742426,
+    "stddev": 2.177269685723301,
+    "median": -0.006177531287884602,
+    "min": -0.34522833333333125,
+    "max": 7.172647183333346,
+    "n": 10
+  },
+  "energy_saving_pct": {
+    "mean": 0.9395780542370444,
+    "stddev": 3.628536854151263,
+    "median": -0.09301520358199511,
+    "min": -1.4310631205505635,
+    "max": 11.656451764824636,
+    "n": 10
+  },
+  "baseline_duration_ms": {
+    "mean": 14814.739483333333,
+    "stddev": 7929.283347409234,
+    "median": 12288.749999999998,
+    "min": 6354.192866666667,
+    "max": 28289.608966666663,
+    "n": 10
+  },
+  "efficient_duration_ms": {
+    "mean": 14619.2255,
+    "stddev": 7849.496606208076,
+    "median": 12351.062583333336,
+    "min": 6368.4808,
+    "max": 28301.745099999996,
+    "n": 10
+  },
+  "duration_saving_ms": {
+    "mean": 195.51398333333265,
+    "stddev": 622.8029206391091,
+    "median": -13.212033333334452,
+    "min": -98.6366666666648,
+    "max": 2049.327766666665,
+    "n": 10
+  },
+  "run_summaries": [
+    {
+      "run": 1,
+      "sample_file_count": 50,
+      "average_baseline_energy_j": 99.09376055409092,
+      "average_efficient_energy_j": 99.05610785000003,
+      "average_energy_saving_j": 0.03765270409089775,
+      "average_energy_saving_pct": 0.035698462677353694,
+      "average_baseline_duration_ms": 28289.608966666663,
+      "average_efficient_duration_ms": 28301.745099999996,
+      "average_duration_saving_ms": -12.136133333334632
+    },
+    {
+      "run": 2,
+      "sample_file_count": 50,
+      "average_baseline_energy_j": 94.40220626666667,
+      "average_efficient_energy_j": 93.78767008333331,
+      "average_energy_saving_j": 0.6145361833333377,
+      "average_energy_saving_pct": 0.6481485288018289,
+      "average_baseline_duration_ms": 26972.058933333337,
+      "average_efficient_duration_ms": 26796.477166666667,
+      "average_duration_saving_ms": 175.58176666666745
+    },
+    {
+      "run": 3,
+      "sample_file_count": 50,
+      "average_baseline_energy_j": 24.230892583333333,
+      "average_efficient_energy_j": 24.074627616666664,
+      "average_energy_saving_j": 0.1562649666666663,
+      "average_energy_saving_pct": 0.6460121273617454,
+      "average_baseline_duration_ms": 6923.112166666669,
+      "average_efficient_duration_ms": 6878.465033333334,
+      "average_duration_saving_ms": 44.647133333334445
+    },
+    {
+      "run": 4,
+      "sample_file_count": 50,
+      "average_baseline_energy_j": 23.754766933333332,
+      "average_efficient_energy_j": 24.09734168333333,
+      "average_energy_saving_j": -0.3425747500000007,
+      "average_energy_saving_pct": -1.4310631205505635,
+      "average_baseline_duration_ms": 6787.076266666667,
+      "average_efficient_duration_ms": 6884.954766666667,
+      "average_duration_saving_ms": -97.8784999999998
+    },
+    {
+      "run": 5,
+      "sample_file_count": 50,
+      "average_baseline_energy_j": 38.71857861666667,
+      "average_efficient_energy_j": 38.93619648333334,
+      "average_energy_saving_j": -0.21761786666666438,
+      "average_energy_saving_pct": -0.5656777030712999,
+      "average_baseline_duration_ms": 11062.451033333333,
+      "average_efficient_duration_ms": 11124.627566666668,
+      "average_duration_saving_ms": -62.176533333336316
+    },
+    {
+      "run": 6,
+      "sample_file_count": 50,
+      "average_baseline_energy_j": 22.239675033333338,
+      "average_efficient_energy_j": 22.289682799999998,
+      "average_energy_saving_j": -0.05000776666666695,
+      "average_energy_saving_pct": -0.2217288698413439,
+      "average_baseline_duration_ms": 6354.192866666667,
+      "average_efficient_duration_ms": 6368.4808,
+      "average_duration_saving_ms": -14.287933333334271
+    },
+    {
+      "run": 7,
+      "sample_file_count": 50,
+      "average_baseline_energy_j": 59.736135433333345,
+      "average_efficient_energy_j": 52.56348825,
+      "average_energy_saving_j": 7.172647183333346,
+      "average_energy_saving_pct": 11.656451764824636,
+      "average_baseline_duration_ms": 17067.467266666667,
+      "average_efficient_duration_ms": 15018.1395,
+      "average_duration_saving_ms": 2049.327766666665
+    },
+    {
+      "run": 8,
+      "sample_file_count": 50,
+      "average_baseline_energy_j": 32.558619099999994,
+      "average_efficient_energy_j": 32.90384743333333,
+      "average_energy_saving_j": -0.34522833333333125,
+      "average_energy_saving_pct": -1.060719683574267,
+      "average_baseline_duration_ms": 9302.462600000003,
+      "average_efficient_duration_ms": 9401.099266666666,
+      "average_duration_saving_ms": -98.6366666666648
+    },
+    {
+      "run": 9,
+      "sample_file_count": 50,
+      "average_baseline_energy_j": 47.302671383333326,
+      "average_efficient_energy_j": 47.521241599999996,
+      "average_energy_saving_j": -0.21857021666666535,
+      "average_energy_saving_pct": -0.4627587868258995,
+      "average_baseline_duration_ms": 13515.048966666664,
+      "average_efficient_duration_ms": 13577.497600000002,
+      "average_duration_saving_ms": -62.44863333333827
+    },
+    {
+      "run": 10,
+      "sample_file_count": 50,
+      "average_baseline_energy_j": 76.55870518333333,
+      "average_efficient_energy_j": 76.44268869999999,
+      "average_energy_saving_j": 0.11601648333333969,
+      "average_energy_saving_pct": 0.15141782256825295,
+      "average_baseline_duration_ms": 21873.91576666666,
+      "average_efficient_duration_ms": 21840.768199999995,
+      "average_duration_saving_ms": 33.14756666666775
+    }
+  ],
+  "generated_at": "2026-04-01T13:12:14.183Z"
+}
