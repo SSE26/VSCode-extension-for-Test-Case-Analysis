@@ -1,0 +1,37 @@
+════════════════════════════════════════════════════════════════════
+  EXPERIMENT RESULTS  —  Energy-Aware Test Ordering
+════════════════════════════════════════════════════════════════════
+
+  Research question : Does energy-aware ordering save energy vs baseline?
+
+  CPU               : Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz
+  TDP estimate      : 35 W  (idle baseline: 3.5 W)
+  Runs              : 10
+  Sample / run      : 50 files
+  Warm-up / run     : 1 discarded iteration(s)
+  Measured / run    : 3 iteration(s)
+  Observation unit  : average of 3 full-sample iterations per run
+  Total run records : 10
+  Generated at      : 2026-04-01T00:43:47.167Z
+
+────────────────────────────────────────────────────────────────────
+  ENERGY  (Joules per sampled run average)
+────────────────────────────────────────────────────────────────────
+  Baseline  mean : 82.5452 J  ± 47.3809  (median 70.5952)
+  Efficient mean : 82.7694 J  ± 47.2271  (median 70.7728)
+
+  Mean saving    : -0.2241 J  ± 0.2654
+  Median saving  : -0.3154 J
+  Mean saving %  : -0.6 %
+  Min / Max      : -0.5698 J  /  0.2931 J
+
+  → Positive saving = efficient strategy used less energy
+
+────────────────────────────────────────────────────────────────────
+  DURATION  (milliseconds per sampled run average)
+────────────────────────────────────────────────────────────────────
+  Baseline  mean : 23561.0 ms  ± 13511.8
+  Efficient mean : 23643.5 ms  ± 13488.5
+  Mean saving    : -82.6 ms
+
+════════════════════════════════════════════════════════════════════
