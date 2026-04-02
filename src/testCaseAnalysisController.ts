@@ -14,7 +14,7 @@ import {
   getSupportedTestFileExtensions,
   isSupportedTestFile
 } from "./testFileUtils";
-import { CacheFlushResult, TestProfileCache } from "./testProfileCache";
+import { CacheFlushResult, getCacheKey, TestProfileCache } from "./testProfileCache";
 
 export class TestCaseAnalysisController {
   constructor(private readonly cacheRootPath: string) {}
@@ -23,6 +23,7 @@ export class TestCaseAnalysisController {
     selectedFiles: [],
     profiledTests: [],
     efficientRunTests: [],
+    showProfileStatuses: false,
     isBusy: false,
     status: "Select test files to begin."
   };
@@ -67,6 +68,7 @@ export class TestCaseAnalysisController {
     this.state.selectedFiles = supportedFiles;
     this.state.profiledTests = [];
     this.state.efficientRunTests = [];
+    this.state.showProfileStatuses = false;
     this.state.status = `Selected ${supportedFiles.length} test file${supportedFiles.length === 1 ? "" : "s"} from folder.`;
     this.postState();
   }
@@ -132,6 +134,7 @@ export class TestCaseAnalysisController {
     this.state.selectedFiles = supportedUris;
     this.state.profiledTests = [];
     this.state.efficientRunTests = [];
+    this.state.showProfileStatuses = false;
     this.state.status = `Selected ${supportedUris.length} JavaScript/TypeScript test file${supportedUris.length === 1 ? "" : "s"}.`;
     this.postState();
     if (supportedUris.length !== uris.length) {
@@ -154,6 +157,7 @@ export class TestCaseAnalysisController {
         if (discoveredTests.length === 0) {
           this.state.profiledTests = [];
           this.state.efficientRunTests = [];
+          this.state.showProfileStatuses = false;
           this.state.status = "No individual test cases were found in the selected files.";
           void vscode.window.showWarningMessage(
             "No individual test cases were found. This discovery step currently supports direct test(...) and it(...) calls."
@@ -176,6 +180,7 @@ export class TestCaseAnalysisController {
 
         this.state.profiledTests = profiledTests;
         this.state.efficientRunTests = [];
+        this.state.showProfileStatuses = true;
         this.state.status = `Profiled ${profiledTests.length} individual test case${profiledTests.length === 1 ? "" : "s"}.`;
       } finally {
         this.showCacheFlushMessage(await profileCache.flush(), "Profile");
@@ -231,14 +236,11 @@ export class TestCaseAnalysisController {
   }
 
   private async resolveTestsInEnergyOrder(profileCache: TestProfileCache): Promise<ProfiledTestRuntime[] | undefined> {
-    if (this.state.profiledTests.length > 0) {
-      return [...this.state.profiledTests].sort((a, b) => a.profiledEnergyJ - b.profiledEnergyJ);
-    }
-
     const discoveredTests = await discoverTestsInFiles(this.state.selectedFiles);
     if (discoveredTests.length === 0) {
       this.state.profiledTests = [];
       this.state.efficientRunTests = [];
+      this.state.showProfileStatuses = false;
       this.state.status = "No individual test cases were found in the selected files.";
       this.postState();
       void vscode.window.showWarningMessage(
@@ -247,23 +249,32 @@ export class TestCaseAnalysisController {
       return undefined;
     }
 
-    const cachedProfiledTests: ProfiledTestRuntime[] = [];
+    const existingProfiledTests = new Map(
+      this.state.profiledTests.map((test) => [getCacheKey(test), test])
+    );
+
+    const resolvedProfiledTests: ProfiledTestRuntime[] = [];
     for (const discoveredTest of discoveredTests) {
+      const existingProfiledTest = existingProfiledTests.get(getCacheKey(discoveredTest));
       const persistedProfile = profileCache.getPersistedProfile(discoveredTest);
-      if (persistedProfile === undefined) {
+
+      if (persistedProfile === undefined && existingProfiledTest === undefined) {
         void vscode.window.showWarningMessage("Profile the selected test cases before running them efficiently.");
         return undefined;
       }
 
-      cachedProfiledTests.push(this.createCachedProfiledTestRuntime(discoveredTest, persistedProfile));
+      resolvedProfiledTests.push(
+        this.createResolvedProfiledTestRuntime(discoveredTest, existingProfiledTest, persistedProfile)
+      );
     }
 
-    this.state.profiledTests = cachedProfiledTests;
+    this.state.profiledTests = resolvedProfiledTests;
     this.state.efficientRunTests = [];
-    this.state.status = `Loaded ${cachedProfiledTests.length} cached test case profile${cachedProfiledTests.length === 1 ? "" : "s"} for efficient ordering.`;
+    this.state.showProfileStatuses = false;
+    this.state.status = `Prepared ${resolvedProfiledTests.length} test case reference${resolvedProfiledTests.length === 1 ? "" : "s"} for efficient ordering.`;
     this.postState();
 
-    return [...cachedProfiledTests].sort((a, b) => a.profiledEnergyJ - b.profiledEnergyJ);
+    return [...resolvedProfiledTests].sort((a, b) => a.profiledEnergyJ - b.profiledEnergyJ);
   }
 
   // Make sure that the user has selected files
@@ -348,22 +359,34 @@ export class TestCaseAnalysisController {
     };
   }
 
-  private createCachedProfiledTestRuntime(
+  private createResolvedProfiledTestRuntime(
     discoveredTest: DiscoveredTestCase,
-    persistedProfile: PersistedTestProfile
+    existingProfiledTest: ProfiledTestRuntime | undefined,
+    persistedProfile: PersistedTestProfile | undefined
   ): ProfiledTestRuntime {
+    if (persistedProfile !== undefined) {
+      return {
+        uri: discoveredTest.uri,
+        relativeFile: discoveredTest.relativeFile,
+        testName: discoveredTest.testName,
+        sourceHash: discoveredTest.sourceHash,
+        cacheable: discoveredTest.cacheable,
+        energyJ: existingProfiledTest?.energyJ ?? persistedProfile.lastMeasuredEnergyJ,
+        profiledEnergyJ: persistedProfile.weightedEnergyJ,
+        runtimeMs: existingProfiledTest?.runtimeMs ?? 0,
+        profiledRuntimeMs: existingProfiledTest?.profiledRuntimeMs ?? 0,
+        lastRunPassed: existingProfiledTest?.lastRunPassed ?? true,
+        errorMessage: existingProfiledTest?.errorMessage ?? ""
+      };
+    }
+
     return {
+      ...existingProfiledTest!,
       uri: discoveredTest.uri,
       relativeFile: discoveredTest.relativeFile,
       testName: discoveredTest.testName,
       sourceHash: discoveredTest.sourceHash,
-      cacheable: discoveredTest.cacheable,
-      energyJ: persistedProfile.lastMeasuredEnergyJ,
-      profiledEnergyJ: persistedProfile.weightedEnergyJ,
-      runtimeMs: 0,
-      profiledRuntimeMs: 0,
-      lastRunPassed: true,
-      errorMessage: ""
+      cacheable: discoveredTest.cacheable
     };
   }
 
@@ -427,6 +450,7 @@ export class TestCaseAnalysisController {
             actual: test.actual,
             expected: test.expected
           })),
+        showProfileStatuses: this.state.showProfileStatuses,
         isBusy: this.state.isBusy,
         status: this.state.status
       }

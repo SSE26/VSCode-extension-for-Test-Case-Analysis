@@ -26,6 +26,7 @@ export function activate(context: vscode.ExtensionContext): void {
       }
     }),
     vscode.commands.registerCommand("testCaseAnalysis.selectFiles", () => controller.selectFiles()),
+    vscode.commands.registerCommand("testCaseAnalysis.selectFolder", () => controller.selectFolder()),
     vscode.commands.registerCommand("testCaseAnalysis.profileTests", () => controller.profileSelectedTests()),
     vscode.commands.registerCommand("testCaseAnalysis.runTestsEfficiently", () => controller.runTestsEfficiently())
   );
