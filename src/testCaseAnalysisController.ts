@@ -1,19 +1,29 @@
 import * as vscode from "vscode";
 import { getWebviewHtml } from "./webviewHtml";
 import { executeSingleTestCase, getConfiguredCommand } from "./testCommandRunner";
-import { TestRuntime, ViewState } from "./testCaseAnalysisTypes";
+import {
+  DiscoveredTestCase,
+  PersistedTestProfile,
+  ProfiledTestRuntime,
+  TestRuntime,
+  ViewState
+} from "./testCaseAnalysisTypes";
 import {
   discoverTestsInFiles,
   filterSupportedTestFiles,
   getSupportedTestFileExtensions,
   isSupportedTestFile
 } from "./testFileUtils";
+import { CacheFlushResult, getCacheKey, TestProfileCache } from "./testProfileCache";
 
 export class TestCaseAnalysisController {
+  constructor(private readonly cacheRootPath: string) {}
+
   private readonly state: ViewState = {
     selectedFiles: [],
     profiledTests: [],
     efficientRunTests: [],
+    showProfileStatuses: false,
     isBusy: false,
     status: "Select test files to begin."
   };
@@ -58,6 +68,7 @@ export class TestCaseAnalysisController {
     this.state.selectedFiles = supportedFiles;
     this.state.profiledTests = [];
     this.state.efficientRunTests = [];
+    this.state.showProfileStatuses = false;
     this.state.status = `Selected ${supportedFiles.length} test file${supportedFiles.length === 1 ? "" : "s"} from folder.`;
     this.postState();
   }
@@ -123,6 +134,7 @@ export class TestCaseAnalysisController {
     this.state.selectedFiles = supportedUris;
     this.state.profiledTests = [];
     this.state.efficientRunTests = [];
+    this.state.showProfileStatuses = false;
     this.state.status = `Selected ${supportedUris.length} JavaScript/TypeScript test file${supportedUris.length === 1 ? "" : "s"}.`;
     this.postState();
     if (supportedUris.length !== uris.length) {
@@ -137,84 +149,132 @@ export class TestCaseAnalysisController {
     }
 
     const profileCommandTemplate = getConfiguredCommand();
+    const profileCache = await TestProfileCache.load(this.getCacheRootPath());
 
     await this.runBusyTask("Profiling individual tests...", async () => {
-      const discoveredTests = await discoverTestsInFiles(this.state.selectedFiles);
-      if (discoveredTests.length === 0) {
-        this.state.profiledTests = [];
+      try {
+        const discoveredTests = await discoverTestsInFiles(this.state.selectedFiles);
+        if (discoveredTests.length === 0) {
+          this.state.profiledTests = [];
+          this.state.efficientRunTests = [];
+          this.state.showProfileStatuses = false;
+          this.state.status = "No individual test cases were found in the selected files.";
+          void vscode.window.showWarningMessage(
+            "No individual test cases were found. This discovery step currently supports direct test(...) and it(...) calls."
+          );
+          return;
+        }
+
+        const profiledTests: ProfiledTestRuntime[] = [];
+        for (const discoveredTest of discoveredTests) {
+          const result = await executeSingleTestCase(
+            discoveredTest.uri,
+            discoveredTest.testName,
+            profileCommandTemplate
+          );
+          const profiledEnergyJ = profileCache.updateProfile(discoveredTest, result.energyJ);
+          profiledTests.push(
+            this.createProfiledTestRuntime(discoveredTest, result, profiledEnergyJ)
+          );
+        }
+
+        this.state.profiledTests = profiledTests;
         this.state.efficientRunTests = [];
-        this.state.status = "No individual test cases were found in the selected files.";
-        void vscode.window.showWarningMessage(
-          "No individual test cases were found. This discovery step currently supports direct test(...) and it(...) calls."
-        );
-        return;
+        this.state.showProfileStatuses = true;
+        this.state.status = `Profiled ${profiledTests.length} individual test case${profiledTests.length === 1 ? "" : "s"}.`;
+      } finally {
+        this.showCacheFlushMessage(await profileCache.flush(), "Profile");
       }
-
-      const profiledTests: TestRuntime[] = [];
-      for (const discoveredTest of discoveredTests) {
-        const result = await executeSingleTestCase(
-          discoveredTest.uri,
-          discoveredTest.testName,
-          profileCommandTemplate
-        );
-        profiledTests.push(result);
-      }
-
-      this.state.profiledTests = profiledTests;
-      this.state.efficientRunTests = [];
-      this.state.status = `Profiled ${profiledTests.length} individual test case${profiledTests.length === 1 ? "" : "s"}.`;
     });
   }
 
   // Run the saved tests from fastest to slowest
   async runTestsEfficiently(): Promise<void> {
-    if (this.state.profiledTests.length === 0) {
-      void vscode.window.showWarningMessage("Profile the selected test cases before running them efficiently.");
-      return;
-    }
-
     if (!(await this.ensureSelectedFiles())) {
       return;
     }
 
     const efficientCommandTemplate = getConfiguredCommand();
+    const profileCache = await TestProfileCache.load(this.getCacheRootPath());
+    const testsInEnergyOrder = await this.resolveTestsInEnergyOrder(profileCache);
+    if (testsInEnergyOrder === undefined) {
+      return;
+    }
 
-    await this.runBusyTask("Running profiled tests from shortest to longest...", async () => {
-      const executedTests: TestRuntime[] = [];
-      this.state.efficientRunTests = [];
-      this.postState();
-      const testsInEnergyOrder = [...this.state.profiledTests].sort((a, b) => a.profiledEnergyJ - b.profiledEnergyJ);
-      for (const test of testsInEnergyOrder) {
-        const result = await executeSingleTestCase(
-          test.uri,
-          test.testName,
-          efficientCommandTemplate
-        );
-        const executedTest: TestRuntime = {
-          uri: test.uri,
-          testName: test.testName,
-          energyJ: result.energyJ,
-          profiledEnergyJ: test.profiledEnergyJ,
-          runtimeMs: result.runtimeMs,
-          profiledRuntimeMs: test.profiledRuntimeMs,
-          lastRunPassed: result.lastRunPassed,
-          errorMessage: result.errorMessage
-        };
-        executedTests.push(executedTest);
-        this.state.efficientRunTests = [...executedTests];
+    await this.runBusyTask("Running profiled tests from lowest to highest energy...", async () => {
+      try {
+        const executedTests: ProfiledTestRuntime[] = [];
+        this.state.efficientRunTests = [];
         this.postState();
-        if (!result.lastRunPassed) {
-          this.state.status = `Stopped after failure: ${this.formatTestLabel(executedTest.uri, executedTest.testName)}`;
-          void vscode.window.showErrorMessage(
-            `Test execution stopped after failure in ${this.formatTestLabel(executedTest.uri, executedTest.testName)}.`
+        for (const test of testsInEnergyOrder) {
+          const result = await executeSingleTestCase(
+            test.uri,
+            test.testName,
+            efficientCommandTemplate
           );
-          return;
+          const profiledEnergyJ = profileCache.updateProfile(test, result.energyJ);
+          const executedTest = this.createProfiledTestRuntime(test, result, profiledEnergyJ, test.profiledRuntimeMs);
+          this.updateProfiledEnergyReference(executedTest);
+          executedTests.push(executedTest);
+          this.state.efficientRunTests = [...executedTests];
+          this.postState();
+          if (!result.lastRunPassed) {
+            this.state.status = `Stopped after failure: ${this.formatTestLabel(executedTest.uri, executedTest.testName)}`;
+            void vscode.window.showErrorMessage(
+              `Test execution stopped after failure in ${this.formatTestLabel(executedTest.uri, executedTest.testName)}.`
+            );
+            return;
+          }
         }
+
+        this.state.status = `Executed ${executedTests.length} individual test case${executedTests.length === 1 ? "" : "s"} in energy order.`;
+        void vscode.window.showInformationMessage("Efficient test run completed without failures.");
+      } finally {
+        this.showCacheFlushMessage(await profileCache.flush(), "Efficient run");
+      }
+    });
+  }
+
+  private async resolveTestsInEnergyOrder(profileCache: TestProfileCache): Promise<ProfiledTestRuntime[] | undefined> {
+    const discoveredTests = await discoverTestsInFiles(this.state.selectedFiles);
+    if (discoveredTests.length === 0) {
+      this.state.profiledTests = [];
+      this.state.efficientRunTests = [];
+      this.state.showProfileStatuses = false;
+      this.state.status = "No individual test cases were found in the selected files.";
+      this.postState();
+      void vscode.window.showWarningMessage(
+        "No individual test cases were found. This discovery step currently supports direct test(...) and it(...) calls."
+      );
+      return undefined;
+    }
+
+    const existingProfiledTests = new Map(
+      this.state.profiledTests.map((test) => [getCacheKey(test), test])
+    );
+
+    const resolvedProfiledTests: ProfiledTestRuntime[] = [];
+    for (const discoveredTest of discoveredTests) {
+      const existingProfiledTest = existingProfiledTests.get(getCacheKey(discoveredTest));
+      const persistedProfile = profileCache.getPersistedProfile(discoveredTest);
+
+      if (persistedProfile === undefined && existingProfiledTest === undefined) {
+        void vscode.window.showWarningMessage("Profile the selected test cases before running them efficiently.");
+        return undefined;
       }
 
-      this.state.status = `Executed ${executedTests.length} individual test case${executedTests.length === 1 ? "" : "s"} in energy order.`;
-      void vscode.window.showInformationMessage("Efficient test run completed without failures.");
-    });
+      resolvedProfiledTests.push(
+        this.createResolvedProfiledTestRuntime(discoveredTest, existingProfiledTest, persistedProfile)
+      );
+    }
+
+    this.state.profiledTests = resolvedProfiledTests;
+    this.state.efficientRunTests = [];
+    this.state.showProfileStatuses = false;
+    this.state.status = `Prepared ${resolvedProfiledTests.length} test case reference${resolvedProfiledTests.length === 1 ? "" : "s"} for efficient ordering.`;
+    this.postState();
+
+    return [...resolvedProfiledTests].sort((a, b) => a.profiledEnergyJ - b.profiledEnergyJ);
   }
 
   // Make sure that the user has selected files
@@ -264,6 +324,10 @@ export class TestCaseAnalysisController {
     return vscode.workspace.workspaceFolders?.[0];
   }
 
+  private getCacheRootPath(): string | undefined {
+    return this.cacheRootPath;
+  }
+
   // Make path readable
   private formatPath(uri: vscode.Uri): string {
     return vscode.workspace.asRelativePath(uri, false);
@@ -277,6 +341,83 @@ export class TestCaseAnalysisController {
   // Format the test label for display
   private formatTestLabel(uri: vscode.Uri, testName: string): string {
     return `${this.formatPath(uri)} :: ${testName}`;
+  }
+
+  private createProfiledTestRuntime(
+    discoveredTest: DiscoveredTestCase | ProfiledTestRuntime,
+    result: TestRuntime,
+    profiledEnergyJ: number,
+    profiledRuntimeMs = result.runtimeMs
+  ): ProfiledTestRuntime {
+    return {
+      ...result,
+      relativeFile: discoveredTest.relativeFile,
+      sourceHash: discoveredTest.sourceHash,
+      cacheable: discoveredTest.cacheable,
+      profiledEnergyJ,
+      profiledRuntimeMs
+    };
+  }
+
+  private createResolvedProfiledTestRuntime(
+    discoveredTest: DiscoveredTestCase,
+    existingProfiledTest: ProfiledTestRuntime | undefined,
+    persistedProfile: PersistedTestProfile | undefined
+  ): ProfiledTestRuntime {
+    if (persistedProfile !== undefined) {
+      return {
+        uri: discoveredTest.uri,
+        relativeFile: discoveredTest.relativeFile,
+        testName: discoveredTest.testName,
+        sourceHash: discoveredTest.sourceHash,
+        cacheable: discoveredTest.cacheable,
+        energyJ: existingProfiledTest?.energyJ ?? persistedProfile.lastMeasuredEnergyJ,
+        profiledEnergyJ: persistedProfile.weightedEnergyJ,
+        runtimeMs: existingProfiledTest?.runtimeMs ?? 0,
+        profiledRuntimeMs: existingProfiledTest?.profiledRuntimeMs ?? 0,
+        lastRunPassed: existingProfiledTest?.lastRunPassed ?? true,
+        errorMessage: existingProfiledTest?.errorMessage ?? ""
+      };
+    }
+
+    return {
+      ...existingProfiledTest!,
+      uri: discoveredTest.uri,
+      relativeFile: discoveredTest.relativeFile,
+      testName: discoveredTest.testName,
+      sourceHash: discoveredTest.sourceHash,
+      cacheable: discoveredTest.cacheable
+    };
+  }
+
+  private updateProfiledEnergyReference(updatedTest: ProfiledTestRuntime): void {
+    this.state.profiledTests = this.state.profiledTests.map((test) => {
+      if (test.relativeFile !== updatedTest.relativeFile || test.testName !== updatedTest.testName) {
+        return test;
+      }
+
+      return {
+        ...test,
+        profiledEnergyJ: updatedTest.profiledEnergyJ
+      };
+    });
+  }
+
+  private showCacheFlushMessage(result: CacheFlushResult, phaseLabel: string): void {
+    if (result.wroteFile) {
+      void vscode.window.showInformationMessage(`${phaseLabel} cache saved to ${result.cacheFilePath}`);
+      return;
+    }
+
+    if (result.reason === "no-cache-path") {
+      void vscode.window.showWarningMessage(`${phaseLabel} cache was not written because no cache root path was available.`);
+      return;
+    }
+
+    void vscode.window.showWarningMessage(
+      `${phaseLabel} cache was not written because no cacheable test updates were pending.` +
+      (result.cacheFilePath ? ` Expected path: ${result.cacheFilePath}` : "")
+    );
   }
 
   // Send the latest data to the UI
@@ -305,6 +446,7 @@ export class TestCaseAnalysisController {
             profiledRuntimeMs: test.profiledRuntimeMs,
             lastRunPassed: test.lastRunPassed
           })),
+        showProfileStatuses: this.state.showProfileStatuses,
         isBusy: this.state.isBusy,
         status: this.state.status
       }

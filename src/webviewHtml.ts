@@ -129,7 +129,7 @@ export function getWebviewHtml(): string {
     </div>
 
     <div class="panel">
-      <p class="title">Measured Test Energy</p>
+      <p class="title">Weighted Test Energy</p>
       <ul id="profiledTests"></ul>
       <div id="profiledTotal" class="total"></div>
     </div>
@@ -189,9 +189,10 @@ export function getWebviewHtml(): string {
 
       profiledTestsElement.replaceChildren(...toResultItems(
         state.profiledTests,
-        (test) => test.fileName + " :: " + test.testName + " - " + (test.energyJ * 1000).toFixed(3) + " mJ"
+        (test) => test.fileName + " :: " + test.testName + " - " + (test.profiledEnergyJ * 1000).toFixed(3) + " mJ",
+        state.showProfileStatuses
       ));
-      const profiledTotal = (state.profiledTests || []).reduce((sum, t) => sum + t.energyJ, 0);
+      const profiledTotal = (state.profiledTests || []).reduce((sum, t) => sum + t.profiledEnergyJ, 0);
       profiledTotalElement.textContent = state.profiledTests && state.profiledTests.length > 0
         ? "Total: " + (profiledTotal * 1000).toFixed(3) + " mJ"
         : "";
@@ -220,7 +221,7 @@ export function getWebviewHtml(): string {
       });
     }
 
-    function toResultItems(values, formatter) {
+    function toResultItems(values, formatter, showBadge = true) {
       if (!values || values.length === 0) {
         const item = document.createElement("li");
         item.textContent = "None";
@@ -235,11 +236,15 @@ export function getWebviewHtml(): string {
         text.className = "result-text";
         text.textContent = formatter(value);
 
-        const badge = document.createElement("span");
-        badge.className = value.lastRunPassed ? "badge pass" : "badge fail";
-        badge.textContent = value.lastRunPassed ? "✅ PASS" : "❌ FAIL";
+        if (showBadge) {
+          const badge = document.createElement("span");
+          badge.className = value.lastRunPassed ? "badge pass" : "badge fail";
+          badge.textContent = value.lastRunPassed ? "✅ PASS" : "❌ FAIL";
+          item.append(text, badge);
+          return item;
+        }
 
-        item.append(text, badge);
+        item.append(text);
         return item;
       });
     }

@@ -16,7 +16,7 @@ class TestCaseAnalysisWebviewProvider implements vscode.WebviewViewProvider {
 }
 
 export function activate(context: vscode.ExtensionContext): void {
-  const controller = new TestCaseAnalysisController();
+  const controller = new TestCaseAnalysisController(context.extensionUri.fsPath);
   const provider = new TestCaseAnalysisWebviewProvider(controller);
 
   context.subscriptions.push(
