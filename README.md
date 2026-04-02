@@ -9,16 +9,13 @@ This repository contains the `local.test-case-analysis` VS Code extension.
 - Supports profiling tests and running tests more efficiently
 - Includes VSIX packaging and install scripts for local testing
 
-## Development
+## Prerequisites
 
-Prerequisite: install Node.js so `npm` is available.
+- Install Node.js so that `npm` is available.
+- Run `npm install` once in the project root.
 
-1. Run `npm install` once
-2. Press `F5` in VS Code
-3. In the Extension Development Host, open the `Test Case Analysis` view in the Activity Bar
-4. Use the contributed commands from the Command Palette or the sidebar UI
 
-## Build and install the extension
+## Build and install the extension on Windows/Linux
 
 Create a VSIX package:
 
@@ -32,4 +29,21 @@ Create the VSIX and install it into VS Code:
 npm run vsix:install
 ```
 
-This generates a file like `test-case-analysis-0.0.1.vsix` in the project root.
+This generates a file `test-case-analysis-0.0.1.vsix` in the project root.
+
+## Build and install the extension on Mac
+
+Create a VSIX package:
+
+```sh
+npx vsce package
+```
+
+This command creates a `.vsix` package in the project root.
+
+To install the extension from the generated `.vsix` file in Visual Studio Code:
+
+1. Open Visual Studio Code.
+2. Open the Command Palette.
+3. Run `Extensions: Install from VSIX...`.
+4. Select the generated `.vsix` file from the repository root.
