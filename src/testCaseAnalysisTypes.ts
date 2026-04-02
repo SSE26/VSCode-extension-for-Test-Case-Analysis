@@ -48,6 +48,7 @@ export type ViewState = {
   selectedFiles: vscode.Uri[];
   profiledTests: ProfiledTestRuntime[];
   efficientRunTests: ProfiledTestRuntime[];
+  showProfileStatuses: boolean;
   isBusy: boolean;
   status: string;
 };
