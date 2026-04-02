@@ -81,12 +81,15 @@ export async function executeSingleTestCase(
       var actual: string | undefined = undefined;
       var expected: string | undefined = undefined;
       if (code !== 0) {
-        const regexFilter = /expected:\s*([\s\S]*?)\r?\n\s*actual:\s*(.*)/i;
-        const combinedOutput = [stdout, stderr].filter(Boolean).join("\n");
-        const outputMatch = combinedOutput.match(regexFilter);
-        if (outputMatch?.[1] !== undefined && outputMatch?.[2] !== undefined) {
-          expected = outputMatch[1].trim();
-          actual = outputMatch[2].trim();
+        const regexFilter = /\{[^{}]*\}/s;
+        const jsonMatch = stdout.match(regexFilter);
+        if (jsonMatch != null) {
+          const jsonString = jsonMatch[0]
+            .replace(/(\w+):/g, '"$1":')
+            .replace(/'/g, '"');
+          const parsed = JSON.parse(jsonString);
+          actual = parsed.actual;
+          expected = parsed.expected;
         }
       }
 

@@ -65,7 +65,7 @@
       "properties": {
         "testCaseAnalysis.testCommandTemplate": {
           "type": "string",
-          "default": "node --test --test-name-pattern ${testNamePattern} ${relativeFile}",
+          "default": "node --test --test-reporter=spec --test-name-pattern ${testNamePattern} ${relativeFile}",
           "description": "Command used to run one discovered test case. Use ${file}, ${relativeFile}, ${testName}, or ${testNamePattern} in the command. Note: on Windows, commands that rely on .cmd wrappers (e.g. npx, jest) may need to be specified as npx.cmd."
         },
         "testCaseAnalysis.tdpWatts": {
